@@ -30,9 +30,9 @@ export default function ThemeSelector() {
   };
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+    <div className="bg-card border border-border rounded-2xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <div className="flex items-center gap-2.5 mb-3">
-        <span className="bg-accent text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(88,86,214,0.3)]">
+        <span className="bg-accent text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(0,137,123,0.3)]">
           2
         </span>
         <span className="text-lg font-bold text-text">공감 주제</span>
@@ -73,13 +73,13 @@ export default function ThemeSelector() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="주제 검색..."
-          className="w-full pl-10 pr-4 py-2.5 text-base border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card"
+          className="w-full pl-10 pr-4 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card"
           aria-label="주제 검색"
         />
       </div>
 
       <div
-        className="flex flex-wrap gap-2 max-h-56 overflow-y-auto pr-1"
+        className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1"
         role="radiogroup"
         aria-label="공감 주제 선택"
       >
@@ -94,7 +94,7 @@ export default function ThemeSelector() {
                 px-3 py-1.5 rounded-xl text-sm cursor-pointer transition-all border
                 ${
                   isSelected
-                    ? 'border-accent bg-accent-light text-accent font-semibold shadow-[0_2px_8px_rgba(88,86,214,0.15)] scale-105'
+                    ? 'border-accent bg-accent-light text-accent font-semibold shadow-[0_2px_8px_rgba(0,137,123,0.15)] scale-105'
                     : 'border-border bg-white text-text hover:shadow-md hover:-translate-y-0.5 dark:bg-card'
                 }
               `}
@@ -118,7 +118,7 @@ export default function ThemeSelector() {
           value={customThemeInput}
           onChange={(e) => setCustomThemeInput(e.target.value)}
           placeholder="직접 입력 (예: 시험 기간 스트레스)"
-          className="w-full px-4 py-2.5 text-base border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card"
+          className="w-full px-4 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card"
           aria-label="커스텀 주제 입력"
         />
       </div>

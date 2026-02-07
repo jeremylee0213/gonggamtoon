@@ -49,8 +49,8 @@ export default function CopyButton({ text, label = '복사' }: CopyButtonProps) 
       className={`
         flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold cursor-pointer transition-all
         ${copied
-          ? 'bg-success text-white shadow-[0_2px_8px_rgba(52,199,89,0.3)]'
-          : 'bg-primary text-white hover:bg-primary-dark shadow-[0_2px_8px_rgba(0,122,255,0.3)] hover:shadow-[0_4px_12px_rgba(0,122,255,0.4)] hover:-translate-y-0.5'
+          ? 'bg-success text-white shadow-[0_2px_8px_rgba(102,187,106,0.3)]'
+          : 'bg-primary text-white hover:bg-primary-dark shadow-[0_2px_8px_rgba(76,175,80,0.3)] hover:shadow-[0_4px_12px_rgba(76,175,80,0.4)] hover:-translate-y-0.5'
         }
       `}
     >

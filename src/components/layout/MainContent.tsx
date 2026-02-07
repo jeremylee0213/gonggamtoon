@@ -24,16 +24,16 @@ export default function MainContent() {
   const hasRightContent = isGeneratingStories || generatedStories.length > 0 || generatedPrompts.length > 0;
 
   return (
-    <div className="max-w-[1400px] mx-auto w-full px-6 py-6">
-      <div className="mb-6">
+    <div className="max-w-[1400px] mx-auto w-full px-4 py-3">
+      <div className="mb-3">
         <ProgressStepper />
       </div>
 
       <SettingsSummaryBar />
 
-      <div className="flex gap-6 max-lg:flex-col">
+      <div className="flex gap-4 max-lg:flex-col">
         {/* Left: Settings */}
-        <aside className="w-[420px] min-w-[420px] max-lg:w-full max-lg:min-w-0 space-y-5 shrink-0">
+        <aside className="w-[380px] min-w-[380px] max-lg:w-full max-lg:min-w-0 space-y-3 shrink-0">
           <section id="section-api">
             <ApiSettings />
           </section>
@@ -46,30 +46,30 @@ export default function MainContent() {
             <ThemeSelector />
           </section>
 
-          {/* Language + Mode: side by side */}
-          <section className="bg-card border border-border rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <div className="space-y-4">
-              <LanguageSelector />
-              <ModeSelector />
+          {/* Language + Mode + Panels + Generate: compact row */}
+          <section className="bg-card border border-border rounded-2xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <div className="flex gap-3 max-sm:flex-col">
+              <div className="flex-1 space-y-2">
+                <LanguageSelector />
+                <ModeSelector />
+              </div>
+              <div className="flex-1 space-y-2">
+                <PanelSelector />
+              </div>
             </div>
+          </section>
+
+          <section id="section-generate">
+            <GenerateButtons />
           </section>
 
           <section>
             <AdvancedOptions />
           </section>
-
-          <section id="section-generate" className="flex items-end gap-4">
-            <div className="flex-1">
-              <PanelSelector />
-            </div>
-            <div className="flex-1">
-              <GenerateButtons />
-            </div>
-          </section>
         </aside>
 
         {/* Right: Stories + Prompts */}
-        <main className="flex-1 min-w-0 space-y-5">
+        <main className="flex-1 min-w-0 space-y-4">
           {hasRightContent ? (
             <Suspense fallback={<LoadingSpinner />}>
               <section id="section-stories">

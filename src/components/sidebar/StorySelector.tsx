@@ -51,7 +51,7 @@ export default function StorySelector() {
           particleCount: 60,
           spread: 50,
           origin: { y: 0.7 },
-          colors: ['#007AFF', '#5856D6', '#34C759', '#FF9500'],
+          colors: ['#4CAF50', '#00897B', '#66BB6A', '#FF8F00'],
         });
         markCopied();
       }
@@ -67,7 +67,7 @@ export default function StorySelector() {
   return (
     <div>
       <div className="flex items-center gap-2.5 mb-4">
-        <span className="bg-warning text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(255,149,0,0.3)]">
+        <span className="bg-warning text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(255,143,0,0.3)]">
           4
         </span>
         <span className="text-lg font-bold text-text">스토리 선택</span>

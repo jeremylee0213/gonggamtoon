@@ -62,7 +62,7 @@ export default function ApiSettings() {
                 onClick={() => setActiveProvider(p.type)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-bold cursor-pointer transition-all ${
                   activeProvider === p.type
-                    ? 'bg-primary text-white shadow-[0_2px_8px_rgba(0,122,255,0.3)]'
+                    ? 'bg-primary text-white shadow-[0_2px_8px_rgba(76,175,80,0.3)]'
                     : 'bg-surface text-muted hover:bg-surface/80'
                 }`}
                 role="radio"

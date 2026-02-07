@@ -186,7 +186,7 @@ export default function GenerateButtons() {
           ${
             !ready || isGeneratingStories
               ? 'bg-primary/50 cursor-not-allowed text-white'
-              : 'bg-primary hover:bg-primary-dark cursor-pointer text-white shadow-[0_4px_14px_rgba(0,122,255,0.4)] hover:shadow-[0_6px_20px_rgba(0,122,255,0.5)] hover:-translate-y-0.5'
+              : 'bg-primary hover:bg-primary-dark cursor-pointer text-white shadow-[0_4px_14px_rgba(76,175,80,0.4)] hover:shadow-[0_6px_20px_rgba(76,175,80,0.5)] hover:-translate-y-0.5'
           }
         `}
       >

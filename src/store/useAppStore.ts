@@ -125,7 +125,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   customThemeInput: '',
   dialogLanguage: 'ko',
   customLanguageInput: '',
-  contentMode: '19',
+  contentMode: '15',
 
   // 고급 옵션
   selectedKickType: 'auto',
@@ -265,7 +265,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     customThemeInput: '',
     dialogLanguage: 'ko',
     customLanguageInput: '',
-    contentMode: '19',
+    contentMode: '15',
     selectedKickType: 'auto',
     selectedNarrationStyle: 'auto',
     referenceText: '',

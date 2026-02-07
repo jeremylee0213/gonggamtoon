@@ -14,8 +14,8 @@ export default function EmptyState() {
     <div className="flex items-center justify-center py-16">
       <div className="text-center max-w-lg animate-[fadeIn_0.5s_ease-in-out]">
         <div className="relative inline-block mb-6">
-          <div className="text-8xl animate-[bounce_2s_ease-in-out_infinite]">🍌</div>
-          <div className="absolute -top-1 -right-4 text-3xl animate-[fadeIn_1s_ease-in-out]">✨</div>
+          <div className="text-8xl animate-[bounce_2s_ease-in-out_infinite]">🌿</div>
+          <div className="absolute -top-1 -right-4 text-3xl animate-[fadeIn_1s_ease-in-out]">🍃</div>
         </div>
 
         <h2 className="text-3xl font-bold text-text mb-2">공감툰 프롬프트 봇</h2>

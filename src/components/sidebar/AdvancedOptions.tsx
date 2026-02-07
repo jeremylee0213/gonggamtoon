@@ -62,7 +62,7 @@ export default function AdvancedOptions() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface/50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-surface/50 transition-colors"
       >
         <span className="flex items-center gap-2 text-base font-bold text-text">
           <Settings2 className="w-5 h-5 text-accent" />
@@ -75,7 +75,7 @@ export default function AdvancedOptions() {
       </button>
 
       {open && (
-        <div className="px-5 pb-5 space-y-5 border-t border-border pt-4">
+        <div className="px-4 pb-4 space-y-4 border-t border-border pt-3">
           {/* #30: Empathy Intensity */}
           <div>
             <label className="text-sm font-bold text-text block mb-2">

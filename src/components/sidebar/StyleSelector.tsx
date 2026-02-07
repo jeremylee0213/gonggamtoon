@@ -29,9 +29,9 @@ export default function StyleSelector() {
   };
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+    <div className="bg-card border border-border rounded-2xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <div className="flex items-center gap-2.5 mb-3">
-        <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(0,122,255,0.3)]">
+        <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(76,175,80,0.3)]">
           1
         </span>
         <span className="text-lg font-bold text-text">만화 스타일</span>
@@ -72,13 +72,13 @@ export default function StyleSelector() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="스타일 검색..."
-          className="w-full pl-10 pr-4 py-2.5 text-base border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-primary dark:bg-card"
+          className="w-full pl-10 pr-4 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-primary dark:bg-card"
           aria-label="스타일 검색"
         />
       </div>
 
       <div
-        className="flex flex-wrap gap-2 max-h-56 overflow-y-auto pr-1"
+        className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1"
         role="radiogroup"
         aria-label="만화 스타일 선택"
       >
@@ -93,7 +93,7 @@ export default function StyleSelector() {
                 px-3 py-1.5 rounded-xl text-sm cursor-pointer transition-all border
                 ${
                   isSelected
-                    ? 'border-primary bg-primary-light text-primary-dark font-semibold shadow-[0_2px_8px_rgba(0,122,255,0.15)] scale-105'
+                    ? 'border-primary bg-primary-light text-primary-dark font-semibold shadow-[0_2px_8px_rgba(76,175,80,0.15)] scale-105'
                     : 'border-border bg-white text-text hover:shadow-md hover:-translate-y-0.5 dark:bg-card'
                 }
               `}
@@ -116,7 +116,7 @@ export default function StyleSelector() {
           value={customStyleInput}
           onChange={(e) => setCustomStyleInput(e.target.value)}
           placeholder="직접 입력 (예: 미야자키 하야오 풍)"
-          className="w-full px-4 py-2.5 text-base border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-primary dark:bg-card"
+          className="w-full px-4 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-primary dark:bg-card"
           aria-label="커스텀 스타일 입력"
         />
       </div>

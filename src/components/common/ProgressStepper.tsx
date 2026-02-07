@@ -52,7 +52,7 @@ export default function ProgressStepper() {
               >
                 <div className={`
                   w-9 h-9 rounded-full flex items-center justify-center transition-all
-                  ${done ? 'bg-primary text-white shadow-[0_2px_8px_rgba(0,122,255,0.3)]'
+                  ${done ? 'bg-primary text-white shadow-[0_2px_8px_rgba(76,175,80,0.3)]'
                     : active ? 'bg-primary-light text-primary border-2 border-primary'
                     : 'bg-surface text-muted/40 border border-border'}
                 `}>

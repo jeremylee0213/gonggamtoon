@@ -109,7 +109,7 @@ export default function MobileStickyButton() {
         <button
           type="button"
           onClick={() => scrollToSection('btn-generate-stories')}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-[0_4px_20px_rgba(0,122,255,0.4)] hover:shadow-[0_6px_24px_rgba(0,122,255,0.5)] transition-all cursor-pointer animate-[fadeIn_0.3s_ease-in-out]"
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-[0_4px_20px_rgba(76,175,80,0.4)] hover:shadow-[0_6px_24px_rgba(76,175,80,0.5)] transition-all cursor-pointer animate-[fadeIn_0.3s_ease-in-out]"
         >
           {isGeneratingStories ? (
             <>

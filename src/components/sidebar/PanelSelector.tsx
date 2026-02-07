@@ -20,7 +20,7 @@ export default function PanelSelector() {
   return (
     <div>
       <div className="flex items-center gap-2.5 mb-2">
-        <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(0,122,255,0.3)]">
+        <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(76,175,80,0.3)]">
           3
         </span>
         <span className="text-base font-bold text-text">컷 수</span>

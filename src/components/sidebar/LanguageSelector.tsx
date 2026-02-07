@@ -29,7 +29,7 @@ export default function LanguageSelector() {
             className={`
               px-3 py-1.5 rounded-xl text-sm font-medium cursor-pointer transition-all border
               ${dialogLanguage === lang.key
-                ? 'border-primary bg-primary-light text-primary-dark font-semibold shadow-[0_2px_8px_rgba(0,122,255,0.15)]'
+                ? 'border-primary bg-primary-light text-primary-dark font-semibold shadow-[0_2px_8px_rgba(76,175,80,0.15)]'
                 : 'border-border bg-white text-text hover:shadow-md hover:-translate-y-0.5 dark:bg-card'
               }
             `}
