@@ -2,6 +2,7 @@ import type { Style } from '../types';
 
 export const STYLE_CATEGORIES = [
   { key: '일본', label: '일본 애니메이션', emoji: '🇯🇵' },
+  { key: '성인', label: '성인 만화 (섹시)', emoji: '🔞' },
   { key: '서양', label: '서양 카툰', emoji: '🇺🇸' },
   { key: '아트', label: '아트 스타일', emoji: '🎨' },
 ] as const;
@@ -35,6 +36,15 @@ export const styleData: Style[] = [
   { name: '세일러문', en: 'Sailor Moon chibi', emoji: '🌙', chars: ['세일러문', '세일러마스', '턱시도가면'], category: '일본' },
   { name: '에반게리온', en: 'Evangelion chibi', emoji: '🤖', chars: ['신지', '아스카', '레이'], category: '일본' },
   { name: '카드캡터사쿠라', en: 'Cardcaptor Sakura', emoji: '🌸', chars: ['사쿠라', '토모요', '샤오랑'], category: '일본' },
+  // 성인 만화 (섹시)
+  { name: '하이스쿨DxD', en: 'High School DxD ecchi', emoji: '😈', chars: ['잇세이', '리아스', '아케노'], category: '성인' },
+  { name: '토러브루', en: 'To Love-Ru ecchi', emoji: '💋', chars: ['리토', '라라', '모모'], category: '성인' },
+  { name: '프리즌스쿨', en: 'Prison School ecchi', emoji: '⛓️', chars: ['키요시', '하나', '메이코'], category: '성인' },
+  { name: '킬라킬', en: 'Kill la Kill sexy', emoji: '✂️', chars: ['류코', '사츠키', '마코'], category: '성인' },
+  { name: '식극의소마', en: 'Food Wars ecchi', emoji: '🍳', chars: ['소마', '에리나', '메구미'], category: '성인' },
+  { name: '노게임노라이프', en: 'No Game No Life ecchi', emoji: '🎮', chars: ['소라', '시로', '스테프'], category: '성인' },
+  { name: '이세계리뷰어즈', en: 'Ishuzoku Reviewers', emoji: '📝', chars: ['스탕크', '젤', '크림'], category: '성인' },
+  { name: '청춘브타야로', en: 'Bunny Girl Senpai sexy', emoji: '🐰', chars: ['사쿠타', '마이', '카에데'], category: '성인' },
   // 서양 카툰
   { name: '디즈니', en: 'Disney style', emoji: '🏰', chars: ['미키', '도널드', '구피'], category: '서양' },
   { name: '픽사', en: 'Pixar style', emoji: '🎬', chars: ['우디', '버즈', '니모'], category: '서양' },

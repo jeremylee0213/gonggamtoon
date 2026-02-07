@@ -69,4 +69,6 @@ export interface PromptConfig {
   panels: number;
   cols: number;
   rows: number;
+  dialogLanguage?: string;
+  contentMode?: string;
 }

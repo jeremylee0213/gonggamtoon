@@ -3,6 +3,8 @@ import ApiSettings from '../sidebar/ApiSettings';
 import StyleSelector from '../sidebar/StyleSelector';
 import PanelSelector from '../sidebar/PanelSelector';
 import ThemeSelector from '../sidebar/ThemeSelector';
+import LanguageSelector from '../sidebar/LanguageSelector';
+import ModeSelector from '../sidebar/ModeSelector';
 import GenerateButtons from '../sidebar/GenerateButtons';
 import ProgressStepper from '../common/ProgressStepper';
 import EmptyState from '../chat/EmptyState';
@@ -11,13 +13,13 @@ import MobileStickyButton from '../common/MobileStickyButton';
 import { useAppStore } from '../../store/useAppStore';
 
 const StorySelector = lazy(() => import('../sidebar/StorySelector'));
-const ChatContainer = lazy(() => import('../chat/ChatContainer'));
+const PromptCards = lazy(() => import('../sidebar/PromptCards'));
 
 export default function MainContent() {
-  const messages = useAppStore((s) => s.messages);
   const isGeneratingStories = useAppStore((s) => s.isGeneratingStories);
   const generatedStories = useAppStore((s) => s.generatedStories);
-  const hasRightContent = messages.length > 0 || isGeneratingStories || generatedStories.length > 0;
+  const generatedPrompts = useAppStore((s) => s.generatedPrompts);
+  const hasRightContent = isGeneratingStories || generatedStories.length > 0 || generatedPrompts.length > 0;
 
   return (
     <div className="max-w-[1400px] mx-auto w-full px-6 py-6">
@@ -40,6 +42,14 @@ export default function MainContent() {
             <ThemeSelector />
           </section>
 
+          {/* Language + Mode: side by side */}
+          <section className="bg-card border border-border rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <div className="space-y-4">
+              <LanguageSelector />
+              <ModeSelector />
+            </div>
+          </section>
+
           <section id="section-generate" className="flex items-end gap-4">
             <div className="flex-1">
               <PanelSelector />
@@ -50,7 +60,7 @@ export default function MainContent() {
           </section>
         </aside>
 
-        {/* Right: Stories + Prompts (newest first) */}
+        {/* Right: Stories + Prompts */}
         <main className="flex-1 min-w-0 space-y-5">
           {hasRightContent ? (
             <Suspense fallback={<LoadingSpinner />}>
@@ -58,8 +68,8 @@ export default function MainContent() {
                 <StorySelector />
               </section>
 
-              <section id="section-prompt">
-                <ChatContainer />
+              <section id="section-prompts">
+                <PromptCards />
               </section>
             </Suspense>
           ) : (

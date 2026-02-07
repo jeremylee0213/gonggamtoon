@@ -4,6 +4,7 @@ export const THEME_CATEGORIES = [
   { key: '심리', label: '심리/성향', emoji: '🧠' },
   { key: '감정', label: '감정/관계', emoji: '💭' },
   { key: '일상', label: '일상/직장', emoji: '🏢' },
+  { key: '19금', label: '19금 (섹드립)', emoji: '🔞' },
 ] as const;
 
 export const themeMetaList: ThemeMeta[] = [
@@ -30,6 +31,15 @@ export const themeMetaList: ThemeMeta[] = [
   { key: '직장생활', name: '직장생활', emoji: '💼', description: '야근, 눈치, 회의 지옥, 월요병', category: '일상' },
   { key: '시험불안', name: '시험불안', emoji: '📝', description: '벼락치기, 머리 백지, 시험 후 자책', category: '일상' },
   { key: '코딩번아웃', name: '코딩번아웃', emoji: '💻', description: '버그 지옥, 야근, 기술 부채', category: '일상' },
+  // 19금 (섹드립 수준 — 이미지 생성 가능한 수위)
+  { key: '야한상상', name: '야한 상상', emoji: '🫣', description: '은밀한 망상, 갑자기 떠오르는 야릇한 생각', category: '19금' },
+  { key: '야한실수', name: '야한 실수', emoji: '😳', description: '의도치 않은 신체 접촉, 민망한 순간', category: '19금' },
+  { key: '썸탈때', name: '썸 탈 때', emoji: '🫠', description: '설레는 스킨십, 심쿵 순간, 야릇한 눈빛', category: '19금' },
+  { key: '커플밤문화', name: '커플 밤문화', emoji: '🌙', description: '둘만의 비밀, 은밀한 데이트, 야한 장난', category: '19금' },
+  { key: '직장섹드립', name: '직장 섹드립', emoji: '💼', description: '회식 후 분위기, 엘리베이터 긴장감', category: '19금' },
+  { key: '혼자만의밤', name: '혼자만의 밤', emoji: '🛏️', description: '야한 영상 들킬 뻔, 혼자 부끄러운 순간', category: '19금' },
+  { key: '수영장에피소드', name: '수영장 에피소드', emoji: '👙', description: '비키니 시선 강탈, 선크림 발라주기', category: '19금' },
+  { key: '오해받는상황', name: '오해받는 상황', emoji: '🤭', description: '야한 소리로 오해, 엉뚱한 자세 들킴', category: '19금' },
 ];
 
 // 기존 themeData는 참고용으로 유지

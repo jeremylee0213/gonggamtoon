@@ -1,22 +1,44 @@
-import { useState, useEffect } from 'react';
-import { RotateCcw, X, Sun, Moon } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { RotateCcw, X, Sun, Moon, Monitor } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+
+type ThemeMode = 'light' | 'dark' | 'system';
+
+function getSystemDark() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function getSavedMode(): ThemeMode {
+  const saved = localStorage.getItem('gonggamtoon_theme');
+  if (saved === 'light' || saved === 'dark' || saved === 'system') return saved;
+  return 'system';
+}
 
 export default function Header() {
   const resetFlow = useAppStore((s) => s.resetFlow);
   const messages = useAppStore((s) => s.messages);
   const generatedStories = useAppStore((s) => s.generatedStories);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [dark, setDark] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('gonggamtoon_dark') === 'true' ||
-      (!localStorage.getItem('gonggamtoon_dark') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  });
+  const [mode, setMode] = useState<ThemeMode>(getSavedMode);
+
+  const applyTheme = useCallback((m: ThemeMode) => {
+    const isDark = m === 'dark' || (m === 'system' && getSystemDark());
+    document.documentElement.classList.toggle('dark', isDark);
+  }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
-    localStorage.setItem('gonggamtoon_dark', String(dark));
-  }, [dark]);
+    applyTheme(mode);
+    localStorage.setItem('gonggamtoon_theme', mode);
+  }, [mode, applyTheme]);
+
+  // Listen for system theme changes when in 'system' mode
+  useEffect(() => {
+    if (mode !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => applyTheme('system');
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [mode, applyTheme]);
 
   const hasContent = messages.length > 0 || generatedStories.length > 0;
 
@@ -33,6 +55,17 @@ export default function Header() {
     setShowConfirm(false);
   };
 
+  const cycleMode = () => {
+    setMode((prev) => {
+      if (prev === 'light') return 'dark';
+      if (prev === 'dark') return 'system';
+      return 'light';
+    });
+  };
+
+  const modeIcon = mode === 'light' ? <Sun className="w-5 h-5" /> : mode === 'dark' ? <Moon className="w-5 h-5" /> : <Monitor className="w-5 h-5" />;
+  const modeLabel = mode === 'light' ? '라이트 모드' : mode === 'dark' ? '다크 모드' : '시스템 따름';
+
   return (
     <>
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-black/80 border-b border-border/50 h-16 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)]" role="banner">
@@ -44,11 +77,13 @@ export default function Header() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setDark(!dark)}
-            className="p-2 rounded-xl text-muted hover:text-text hover:bg-surface transition-all cursor-pointer"
-            aria-label={dark ? '라이트 모드로 전환' : '다크 모드로 전환'}
+            onClick={cycleMode}
+            className="flex items-center gap-1.5 p-2 rounded-xl text-muted hover:text-text hover:bg-surface transition-all cursor-pointer"
+            aria-label={modeLabel}
+            title={modeLabel}
           >
-            {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {modeIcon}
+            <span className="text-xs font-medium hidden sm:inline">{modeLabel}</span>
           </button>
 
           <button

@@ -23,6 +23,6 @@ export const providerModels: Record<ProviderType, Model[]> = {
 
 export const defaultModels: Record<ProviderType, string> = {
   gemini: 'gemini-2.5-pro-preview-06-05',
-  openai: 'gpt-4o',
+  openai: 'gpt-5.2',
   claude: 'claude-sonnet-4-5-20250929',
 };

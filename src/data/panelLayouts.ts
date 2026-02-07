@@ -13,7 +13,7 @@ export const DEFAULT_PANELS = 8;
 
 export const STORY_PHASES = ['도입', '전개', '절정', '결말'] as const;
 
-export const STORY_GENERATION_COUNT = 4;
+export const STORY_GENERATION_COUNT = 3;
 
 export function getLayoutForPanels(panels: number): PanelLayout {
   const found = PANEL_LAYOUTS.find((l) => l.panels === panels);

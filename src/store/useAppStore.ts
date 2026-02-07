@@ -6,6 +6,9 @@ import { getApiKey, setApiKey as saveApiKey } from '../utils/storage';
 
 const MAX_MESSAGES = 50;
 
+export type DialogLanguage = 'ko' | 'en' | 'ja' | 'zh' | 'custom';
+export type ContentMode = 'kids' | '15' | '19' | '49';
+
 interface AppState {
   // 선택 상태
   selectedStyle: Style | null;
@@ -14,9 +17,13 @@ interface AppState {
   customPanelCount: number | null;
   selectedTheme: ThemeMeta | null;
   customThemeInput: string;
+  dialogLanguage: DialogLanguage;
+  customLanguageInput: string;
+  contentMode: ContentMode;
 
   // 스토리 생성 상태
   generatedStories: GeneratedStory[];
+  generatedPrompts: string[];
   selectedStory: GeneratedStory | null;
   isGeneratingStories: boolean;
   regenerateRequested: boolean;
@@ -25,6 +32,9 @@ interface AppState {
   activeProvider: ProviderType;
   apiKeys: Record<ProviderType, string>;
   selectedModels: Record<ProviderType, string>;
+
+  // 즐겨찾기
+  favorites: { story: GeneratedStory; prompt: string; savedAt: number }[];
 
   // 채팅 상태
   messages: ChatMessage[];
@@ -36,13 +46,21 @@ interface AppState {
   setCustomPanelCount: (count: number | null) => void;
   setTheme: (theme: ThemeMeta | null) => void;
   setCustomThemeInput: (text: string) => void;
+  setDialogLanguage: (lang: DialogLanguage) => void;
+  setCustomLanguageInput: (text: string) => void;
+  setContentMode: (mode: ContentMode) => void;
 
   // 액션 - 스토리
   setGeneratedStories: (stories: GeneratedStory[]) => void;
+  setGeneratedPrompts: (prompts: string[]) => void;
   setSelectedStory: (story: GeneratedStory | null) => void;
   setGeneratingStories: (loading: boolean) => void;
   requestRegenerate: () => void;
   clearRegenerateRequest: () => void;
+
+  // 액션 - 즐겨찾기
+  addFavorite: (story: GeneratedStory, prompt: string) => void;
+  removeFavorite: (savedAt: number) => void;
 
   // 액션 - API
   setActiveProvider: (provider: ProviderType) => void;
@@ -70,13 +88,17 @@ export const useAppStore = create<AppState>((set, get) => ({
   customPanelCount: null,
   selectedTheme: null,
   customThemeInput: '',
+  dialogLanguage: 'ko',
+  customLanguageInput: '',
+  contentMode: '19',
 
   generatedStories: [],
+  generatedPrompts: [],
   selectedStory: null,
   isGeneratingStories: false,
   regenerateRequested: false,
 
-  activeProvider: 'gemini',
+  activeProvider: 'openai',
   apiKeys: {
     gemini: getApiKey('gemini'),
     openai: getApiKey('openai'),
@@ -84,20 +106,46 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   selectedModels: { ...defaultModels },
 
+  favorites: (() => {
+    try {
+      const raw = localStorage.getItem('gonggamtoon_favorites');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  })(),
+
   messages: [],
 
-  setStyle: (style) => set({ selectedStyle: style, customStyleInput: '', generatedStories: [], selectedStory: null }),
-  setCustomStyleInput: (text) => set({ customStyleInput: text, selectedStyle: null, generatedStories: [], selectedStory: null }),
-  setPanels: (panels) => set({ selectedPanels: panels, customPanelCount: null, generatedStories: [], selectedStory: null }),
-  setCustomPanelCount: (count) => set({ customPanelCount: count, generatedStories: [], selectedStory: null }),
-  setTheme: (theme) => set({ selectedTheme: theme, customThemeInput: '', generatedStories: [], selectedStory: null }),
-  setCustomThemeInput: (text) => set({ customThemeInput: text, selectedTheme: null, generatedStories: [], selectedStory: null }),
+  setStyle: (style) => set({ selectedStyle: style, customStyleInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null }),
+  setCustomStyleInput: (text) => set({ customStyleInput: text, selectedStyle: null, generatedStories: [], generatedPrompts: [], selectedStory: null }),
+  setPanels: (panels) => set({ selectedPanels: panels, customPanelCount: null, generatedStories: [], generatedPrompts: [], selectedStory: null }),
+  setCustomPanelCount: (count) => set({ customPanelCount: count, generatedStories: [], generatedPrompts: [], selectedStory: null }),
+  setTheme: (theme) => set({ selectedTheme: theme, customThemeInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null }),
+  setCustomThemeInput: (text) => set({ customThemeInput: text, selectedTheme: null, generatedStories: [], generatedPrompts: [], selectedStory: null }),
+  setDialogLanguage: (lang) => set({ dialogLanguage: lang, customLanguageInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null }),
+  setCustomLanguageInput: (text) => set({ customLanguageInput: text, dialogLanguage: 'custom', generatedStories: [], generatedPrompts: [], selectedStory: null }),
+  setContentMode: (mode) => set({ contentMode: mode, generatedStories: [], generatedPrompts: [], selectedStory: null }),
 
-  setGeneratedStories: (stories) => set({ generatedStories: stories, selectedStory: null }),
+  setGeneratedStories: (stories) => set({ generatedStories: stories, selectedStory: null, generatedPrompts: [] }),
+  setGeneratedPrompts: (prompts) => set({ generatedPrompts: prompts }),
   setSelectedStory: (story) => set({ selectedStory: story }),
   setGeneratingStories: (loading) => set({ isGeneratingStories: loading }),
   requestRegenerate: () => set({ regenerateRequested: true }),
   clearRegenerateRequest: () => set({ regenerateRequested: false }),
+
+  addFavorite: (story, prompt) => {
+    set((state) => {
+      const updated = [...state.favorites, { story, prompt, savedAt: Date.now() }].slice(-20);
+      localStorage.setItem('gonggamtoon_favorites', JSON.stringify(updated));
+      return { favorites: updated };
+    });
+  },
+  removeFavorite: (savedAt) => {
+    set((state) => {
+      const updated = state.favorites.filter((f) => f.savedAt !== savedAt);
+      localStorage.setItem('gonggamtoon_favorites', JSON.stringify(updated));
+      return { favorites: updated };
+    });
+  },
 
   setActiveProvider: (provider) => set({ activeProvider: provider }),
   setApiKey: (provider, key) => {
@@ -130,7 +178,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     customPanelCount: null,
     selectedTheme: null,
     customThemeInput: '',
+    dialogLanguage: 'ko',
+    customLanguageInput: '',
+    contentMode: '19',
     generatedStories: [],
+    generatedPrompts: [],
     selectedStory: null,
     isGeneratingStories: false,
     regenerateRequested: false,

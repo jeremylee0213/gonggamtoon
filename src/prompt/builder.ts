@@ -37,8 +37,26 @@ function getPanelComposition(panelIndex: number, totalPanels: number): string {
 
 const CIRCLE_NUMBERS = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨'];
 
+const LANG_TEXT_RULES: Record<string, string> = {
+  ko: `【⚠️ 한글 필수 규칙 ⚠️】
+!!! ALL Korean text MUST be PERFECTLY rendered — zero broken characters !!!
+!!! 한글 절대 깨지면 안 됨. 선명하고 깨끗하게. 가독성 최우선 !!!
+!!! High-contrast text color against background !!!`,
+  en: `【⚠️ English Text Rules ⚠️】
+!!! ALL English text MUST be perfectly legible — clean, crisp, no spelling errors !!!
+!!! High-contrast text color against background !!!`,
+  ja: `【⚠️ 日本語テキストルール ⚠️】
+!!! ALL Japanese text (hiragana/katakana/kanji) MUST be perfectly rendered !!!
+!!! 日本語を正確に、読みやすく、鮮明に表示すること !!!
+!!! High-contrast text color against background !!!`,
+  zh: `【⚠️ 中文文字规则 ⚠️】
+!!! ALL Chinese text MUST be perfectly rendered — clear and readable !!!
+!!! 中文必须清晰显示，不得出现乱码 !!!
+!!! High-contrast text color against background !!!`,
+};
+
 export function buildPrompt(config: PromptConfig): string {
-  const { style, character, theme, story, panels, cols, rows } = config;
+  const { style, character, theme, story, panels, cols, rows, dialogLanguage, contentMode } = config;
   const { dialog: dialogs, kick, narration, desc } = story;
 
   const font = styleFonts[style.en] ?? {
@@ -65,11 +83,15 @@ export function buildPrompt(config: PromptConfig): string {
   prompt += `• 그리드: ${cols}×${rows} (총 ${panels}컷)\n`;
   prompt += `• 반전: ${kick}\n\n`;
 
-  // 【한글】
-  prompt += `【⚠️ 한글 필수 규칙 ⚠️】\n`;
-  prompt += `!!! ALL Korean text MUST be PERFECTLY rendered — zero broken characters !!!\n`;
-  prompt += `!!! 한글 절대 깨지면 안 됨. 선명하고 깨끗하게. 가독성 최우선 !!!\n`;
-  prompt += `!!! High-contrast text color against background !!!\n\n`;
+  // 【텍스트 규칙 — 언어별】
+  const lang = dialogLanguage ?? 'ko';
+  const textRule = LANG_TEXT_RULES[lang] ?? LANG_TEXT_RULES.ko;
+  prompt += `${textRule}\n\n`;
+
+  if (contentMode === '19' || contentMode === '49') {
+    prompt += `【🔞 콘텐츠 수위】\n`;
+    prompt += `이 만화는 ${contentMode === '19' ? '19금' : '49금'} 콘텐츠입니다. 섹시하고 야한 분위기 연출을 적극적으로 반영하되, 이미지 생성 가능한 범위 내에서 표현하세요.\n\n`;
+  }
 
   // 【레이아웃】
   prompt += `【📐 레이아웃】\n`;
@@ -174,7 +196,7 @@ export function buildPrompt(config: PromptConfig): string {
   prompt += `• ${character} 외형 모든 컷 일관성 (머리색/의상/액세서리)\n`;
   prompt += `• 패널 번호 ${CIRCLE_NUMBERS.slice(0, panels).join('')} 좌상단 작은 원형\n`;
   prompt += `• 첫 컷 상단: "${story.title}" + "${desc}"\n`;
-  prompt += `• ⚠️ 한글 완벽 렌더링 ⚠️\n`;
+  prompt += `• ⚠️ ${lang === 'ko' ? '한글' : lang === 'ja' ? '日本語' : lang === 'zh' ? '中文' : 'Text'} 완벽 렌더링 ⚠️\n`;
   prompt += `• 마지막 컷 하단: "${narration}" 크게\n`;
   prompt += `• 서명 "by Jeremy" 필기체\n`;
   prompt += `• 감정 곡선: 밝음→몰입→충격→여운\n`;

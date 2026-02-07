@@ -8,79 +8,59 @@ import { getLayoutForPanels } from '../../data/panelLayouts';
 import { showToast } from '../common/Toast';
 import { scrollToSection } from '../../hooks/useAutoScroll';
 
-const MAX_RETRY = 1;
+const MAX_RETRY = 2;
+const BACKOFF_BASE_MS = 1000;
 
 export default function GenerateButtons() {
-  // Zustand selector optimization: individual selectors instead of full store
   const selectedStyle = useAppStore((s) => s.selectedStyle);
   const customStyleInput = useAppStore((s) => s.customStyleInput);
   const selectedPanels = useAppStore((s) => s.selectedPanels);
   const customPanelCount = useAppStore((s) => s.customPanelCount);
   const selectedTheme = useAppStore((s) => s.selectedTheme);
   const customThemeInput = useAppStore((s) => s.customThemeInput);
-  const selectedStory = useAppStore((s) => s.selectedStory);
   const isGeneratingStories = useAppStore((s) => s.isGeneratingStories);
   const regenerateRequested = useAppStore((s) => s.regenerateRequested);
   const activeProvider = useAppStore((s) => s.activeProvider);
   const apiKeys = useAppStore((s) => s.apiKeys);
   const selectedModels = useAppStore((s) => s.selectedModels);
   const setGeneratedStories = useAppStore((s) => s.setGeneratedStories);
+  const setGeneratedPrompts = useAppStore((s) => s.setGeneratedPrompts);
   const setSelectedStory = useAppStore((s) => s.setSelectedStory);
   const setGeneratingStories = useAppStore((s) => s.setGeneratingStories);
   const clearRegenerateRequest = useAppStore((s) => s.clearRegenerateRequest);
-  const addMessage = useAppStore((s) => s.addMessage);
+  const dialogLanguage = useAppStore((s) => s.dialogLanguage);
+  const customLanguageInput = useAppStore((s) => s.customLanguageInput);
+  const contentMode = useAppStore((s) => s.contentMode);
   const isReadyToGenerate = useAppStore((s) => s.isReadyToGenerate);
 
   const ready = isReadyToGenerate();
   const effectivePanels = customPanelCount ?? selectedPanels;
-  const prevSelectedStoryRef = useRef(selectedStory);
-
-  // Debounce guard for generate
   const isGeneratingRef = useRef(false);
 
-  useEffect(() => {
-    if (
-      selectedStory &&
-      selectedStory !== prevSelectedStoryRef.current
-    ) {
-      const style = selectedStyle ?? {
-        name: customStyleInput,
-        en: customStyleInput,
-        emoji: '',
-        chars: ['주인공'],
-      };
+  const buildAllPrompts = useCallback((stories: import('../../types').GeneratedStory[]) => {
+    const style = selectedStyle ?? {
+      name: customStyleInput,
+      en: customStyleInput,
+      emoji: '',
+      chars: ['주인공'],
+    };
+    const layout = getLayoutForPanels(effectivePanels);
+    const themeName = selectedTheme?.name ?? customThemeInput;
 
-      const layout = getLayoutForPanels(effectivePanels);
-      const themeName = selectedTheme?.name ?? customThemeInput;
-
-      const prompt = buildPrompt({
+    return stories.map((story) =>
+      buildPrompt({
         style,
-        character: selectedStory.character,
+        character: story.character,
         theme: { name: themeName },
-        story: selectedStory,
+        story,
         panels: effectivePanels,
         cols: layout.cols,
         rows: layout.rows,
-      });
-
-      addMessage({
-        role: 'user',
-        content: `${style.emoji ? style.emoji + ' ' : ''}${style.name} + ${themeName} + ${selectedStory.title} (${effectivePanels}컷)`,
-        type: 'text',
-      });
-
-      addMessage({
-        role: 'bot',
-        content: '프롬프트를 생성했어요!',
-        type: 'prompt',
-        prompt,
-      });
-
-      showToast('프롬프트가 생성되었어요! 복사해서 나노바나나 프로에 붙여넣으세요.', 'success');
-      scrollToSection('section-prompt', 200);
-    }
-    prevSelectedStoryRef.current = selectedStory;
-  }, [selectedStory, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, addMessage]);
+        dialogLanguage,
+        contentMode,
+      }),
+    );
+  }, [selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, contentMode]);
 
   const handleGenerate = useCallback(async () => {
     if (!ready || isGeneratingRef.current) return;
@@ -97,6 +77,9 @@ export default function GenerateButtons() {
         theme: selectedTheme,
         customThemeInput,
         panelCount: effectivePanels,
+        dialogLanguage,
+        customLanguageInput,
+        contentMode,
       });
 
       let lastError: Error | null = null;
@@ -117,6 +100,12 @@ export default function GenerateButtons() {
           }
 
           setGeneratedStories(stories);
+
+          // Build all prompts immediately
+          const prompts = buildAllPrompts(stories);
+          setGeneratedPrompts(prompts);
+
+          showToast('3개 스토리와 프롬프트가 생성되었어요!', 'success');
           return;
         } catch (err) {
           lastError = err instanceof Error ? err : new Error(String(err));
@@ -125,7 +114,9 @@ export default function GenerateButtons() {
             throw lastError;
           }
           if (attempt < MAX_RETRY) {
-            showToast('JSON 파싱 실패, 재시도 중...', 'info');
+            const delay = BACKOFF_BASE_MS * Math.pow(2, attempt);
+            showToast(`재시도 중... (${attempt + 1}/${MAX_RETRY}, ${delay / 1000}초 후)`, 'info');
+            await new Promise((r) => setTimeout(r, delay));
           }
         }
       }
@@ -141,7 +132,7 @@ export default function GenerateButtons() {
       setGeneratingStories(false);
       isGeneratingRef.current = false;
     }
-  }, [ready, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, activeProvider, apiKeys, selectedModels, setGeneratedStories, setSelectedStory, setGeneratingStories]);
+  }, [ready, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, buildAllPrompts]);
 
   useEffect(() => {
     if (regenerateRequested && !isGeneratingStories) {
