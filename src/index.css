@@ -1,0 +1,89 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #F5A623;
+  --color-primary-light: #FFF3D6;
+  --color-primary-dark: #D4860A;
+  --color-accent: #4A90A4;
+  --color-accent-light: #E8F4F7;
+  --color-success: #27AE60;
+  --color-warning: #E67E22;
+  --color-error: #E74C3C;
+  --color-char: #9B59B6;
+  --color-surface: #FFFEF5;
+  --color-card: #FFFFFF;
+  --color-border: #E8ECEF;
+  --color-text: #2C3E50;
+  --color-muted: #5D6970;
+}
+
+@layer base {
+  body {
+    font-family: 'Noto Sans KR', system-ui, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Focus visible for keyboard navigation */
+  *:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 3px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface: #1A1D21;
+    --color-card: #2A2D32;
+    --color-border: #3A3D42;
+    --color-text: #E8ECEF;
+    --color-muted: #9BA3AB;
+    --color-primary-light: #3D2E10;
+    --color-accent-light: #1A3A42;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .max-md\:flex-col {
+    max-height: none;
+    height: auto;
+  }
+}
