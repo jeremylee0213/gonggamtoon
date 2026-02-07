@@ -42,6 +42,7 @@ interface StoryGenConfig {
   selectedKickType?: string;
   selectedNarrationStyle?: string;
   protagonistName?: string;
+  characterPlan?: string[];
   referenceText?: string;
   serialMode?: boolean;
   serialEpisodeCount?: number;
@@ -55,13 +56,16 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     dialogLanguage, customLanguageInput, contentMode,
     selectedKickType = 'auto', selectedNarrationStyle = 'auto',
     protagonistName = '',
+    characterPlan = [],
     referenceText = '', serialMode = false, previousEpisodeSummary = '',
     serialEpisodeCount = STORY_GENERATION_COUNT,
   } = config;
 
   const styleName = style ? `${style.name} (${style.en})` : customStyleInput;
   const characterSeed = protagonistName.trim();
-  const styleCharacterPool = style?.chars?.length ? style.chars.join(', ') : '직장인, 대학생, 프리랜서, 취준생';
+  const styleCharacterPool = style?.chars?.length
+    ? Array.from(new Set(style.chars.map((c) => c.trim()).filter(Boolean)))
+    : (characterSeed ? [characterSeed] : ['주인공A', '주인공B', '주인공C']);
   const resolvedThemes = themes.length > 0 ? themes : (theme ? [theme] : []);
   const themeName = resolvedThemes.length > 0
     ? resolvedThemes.map((t) => t.name).join(', ')
@@ -79,10 +83,18 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     .join(', ');
   const langName = dialogLanguage === 'custom' ? customLanguageInput : LANGUAGE_NAMES[dialogLanguage];
   const generationCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : STORY_GENERATION_COUNT;
+  const normalizedCharacterPlan = (
+    characterPlan.length === generationCount
+      ? characterPlan
+      : Array.from({ length: generationCount }, (_, i) => styleCharacterPool[i % styleCharacterPool.length])
+  ).map((name) => name.trim());
   const themeAssignmentGuide = resolvedThemes.length > 0
     ? Array.from({ length: generationCount }, (_, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`} 중심 주제: ${resolvedThemes[i % resolvedThemes.length].name}`)
         .join('\n')
     : '';
+  const characterAssignmentGuide = normalizedCharacterPlan
+    .map((name, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: ${name}`)
+    .join('\n');
 
   // #22: Theme-specific ratios
   const ratios = PHASE_RATIOS[themeCategory] ?? DEFAULT_RATIOS;
@@ -111,8 +123,7 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
 
 === 조건 ===
 • 만화 스타일: ${styleName}
-• 주인공 기본 모티프: ${characterSeed || '자동 생성'}${characterSeed ? ' (이 모티프를 참고하되 각 화에서 서로 다른 인물로 변주)' : ''}
-• 스타일 추천 주인공 풀: ${styleCharacterPool}
+• 선택 스타일 등장인물 후보: ${styleCharacterPool.join(', ')}
 • 공감 주제: ${themeName}${themeDesc ? ` — ${themeDesc}` : ''}
 • 컷 수: ${panelCount}컷 (각 컷에 대사 1개씩)
 • 대사 언어: ${langName} — 모든 dialog, title, desc, kick, narration, summary를 ${langName}로 작성
@@ -126,7 +137,12 @@ ${EMPATHY_GUIDE}`;
     prompt += '\n• 주제를 화/스토리별로 순환하거나 혼합하되, 선택된 주제를 모두 반영하세요.';
     prompt += `\n• ${serialMode ? '화' : '스토리'}별 주제 배정:\n${themeAssignmentGuide}`;
   }
-  prompt += `\n• 주인공 규칙: 각 ${serialMode ? '화' : '스토리'}의 character는 서로 다른 인물이어야 하며, 이름/직업/말투/상황을 중복하지 마세요.`;
+  prompt += `\n\n=== 주인공 배정표 (필수) ===
+아래 배정표를 절대 변경하지 말고 각 항목의 character를 정확히 동일하게 작성하세요.
+${characterAssignmentGuide}
+• 주인공 규칙: 각 ${serialMode ? '화' : '스토리'}의 character는 반드시 선택 스타일 등장인물 후보 중 하나여야 합니다.
+• 주인공 규칙: 같은 character를 연속 사용하지 말고 번갈아가며 사용하세요.
+• 주인공 규칙: character 외의 이름/직업/말투도 화마다 차별화하세요.`;
 
   // #27: Reference text
   if (referenceText.trim()) {
@@ -171,6 +187,7 @@ ${kickGuide}`;
 모든 텍스트 필드(title, desc, kick, dialog, narration, summary)는 반드시 ${langName}로 작성하세요.
 JSON 배열 길이는 정확히 ${generationCount}개여야 합니다.
 각 항목의 title에는 반드시 화차를 포함하세요 (예: "1화 - 제목", "2화 - 제목").
+각 항목의 character는 위 주인공 배정표 값과 정확히 일치해야 합니다.
 
 [
   {
@@ -181,7 +198,7 @@ JSON 배열 길이는 정확히 ${generationCount}개여야 합니다.
     "dialog": [${Array.from({ length: panelCount }, (_, i) => `"컷${i + 1} 대사"`).join(', ')}],
     "narration": "마지막 내레이션 (감성적 여운, 독자 마음을 울리는 한 문장)",
     "summary": "핵심 요약 (가장 공감되는 장면을 한 문장으로)",
-    "character": "해당 화의 주인공 이름/설정 (다른 화와 중복 금지)"
+    "character": "${normalizedCharacterPlan[0]}"
   }
 ]
 
@@ -190,7 +207,12 @@ ${JSON_FORMAT_INSTRUCTION}`;
   return prompt;
 }
 
-export function parseStoryResponse(text: string, panelCount: number, expectedCount?: number): GeneratedStory[] {
+export function parseStoryResponse(
+  text: string,
+  panelCount: number,
+  expectedCount?: number,
+  characterPlan?: string[],
+): GeneratedStory[] {
   let jsonStr = text.trim();
 
   const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -226,13 +248,19 @@ export function parseStoryResponse(text: string, panelCount: number, expectedCou
         typeof story.character === 'string'
       );
     })
-    .map((story, index) => ({
+    .map((story, index) => {
+      const plannedCharacter = characterPlan?.[index]?.trim();
+      const parsedCharacter = story.character.trim();
+
+      return {
       ...story,
       episode: typeof story.episode === 'number' ? story.episode : (expectedCount ? index + 1 : undefined),
+      character: plannedCharacter || parsedCharacter || `주인공${index + 1}`,
       dialog: story.dialog.length >= panelCount
         ? story.dialog.slice(0, panelCount)
         : [...story.dialog, ...Array(panelCount - story.dialog.length).fill('...')],
-    }));
+      };
+    });
 
   if (expectedCount && normalized.length < expectedCount) {
     throw new Error(`응답에서 ${expectedCount}개의 스토리를 모두 파싱하지 못했습니다.`);

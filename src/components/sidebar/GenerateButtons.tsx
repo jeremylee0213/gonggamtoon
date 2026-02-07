@@ -4,7 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { buildStoryPrompt, parseStoryResponse } from '../../prompt/storyGenerator';
 import { generateTextWithProvider, abortCurrentRequest } from '../../api/factory';
 import { buildPrompt } from '../../prompt/builder';
-import { getLayoutForPanels } from '../../data/panelLayouts';
+import { getLayoutForPanels, STORY_GENERATION_COUNT } from '../../data/panelLayouts';
 import { showToast } from '../common/Toast';
 import { scrollToSection } from '../../hooks/useAutoScroll';
 
@@ -87,6 +87,14 @@ export default function GenerateButtons() {
 
     try {
       const prompt = buildStoryPrompt({
+        characterPlan: (() => {
+          const targetCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : STORY_GENERATION_COUNT;
+          const pool = selectedStyle?.chars?.length
+            ? Array.from(new Set(selectedStyle.chars.map((c) => c.trim()).filter(Boolean)))
+            : [];
+          if (pool.length === 0) return [];
+          return Array.from({ length: targetCount }, (_, i) => pool[i % pool.length]);
+        })(),
         style: selectedStyle,
         customStyleInput,
         themes: selectedThemes,
@@ -105,6 +113,14 @@ export default function GenerateButtons() {
         previousEpisodeSummary,
       });
       const expectedStoryCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : undefined;
+      const characterPlan = (() => {
+        const targetCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : STORY_GENERATION_COUNT;
+        const pool = selectedStyle?.chars?.length
+          ? Array.from(new Set(selectedStyle.chars.map((c) => c.trim()).filter(Boolean)))
+          : [];
+        if (pool.length === 0) return [];
+        return Array.from({ length: targetCount }, (_, i) => pool[i % pool.length]);
+      })();
 
       let lastError: Error | null = null;
 
@@ -120,7 +136,7 @@ export default function GenerateButtons() {
           );
 
           setGenerationPhase('스토리 파싱 중...');
-          const stories = parseStoryResponse(response, effectivePanels, expectedStoryCount);
+          const stories = parseStoryResponse(response, effectivePanels, expectedStoryCount, characterPlan);
 
           if (stories.length === 0) {
             throw new Error('스토리를 파싱하지 못했습니다.');
