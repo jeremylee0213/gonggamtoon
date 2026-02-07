@@ -81,18 +81,18 @@ export default function ThemeSelector() {
                   key={key}
                   type="button"
                   onClick={() => handleSelect(theme)}
-                  className={`
+              className={`
                     relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-all border min-w-[60px] shrink-0
                     ${selectedCount > 0
                       ? 'border-accent bg-accent-light shadow-sm'
                       : 'border-border bg-surface hover:shadow-md hover:-translate-y-0.5'
                     }
                   `}
-                  title={`${theme.name} 추가`}
+                  title={`${theme.name} 선택/해제`}
                 >
                   {selectedCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold">
-                      x{selectedCount}
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center">
+                      ✓
                     </span>
                   )}
                   <span className="text-2xl">{theme.emoji}</span>
@@ -185,16 +185,11 @@ export default function ThemeSelector() {
                         : 'border-border bg-white text-text hover:shadow-md hover:-translate-y-0.5 dark:bg-card'
                     }
                   `}
-                  aria-label={`${theme.name} 추가`}
+                  aria-label={`${theme.name} 선택/해제`}
                   title={theme.description}
                 >
                   {selectedCount > 0 && <Check className="w-3.5 h-3.5 inline mr-1" />}
                   {theme.emoji} {theme.name}
-                  {selectedCount > 0 && (
-                    <span className="ml-1.5 text-[10px] align-middle px-1.5 py-0.5 rounded-full bg-accent text-white">
-                      x{selectedCount}
-                    </span>
-                  )}
                 </button>
               );
             })}
@@ -205,7 +200,7 @@ export default function ThemeSelector() {
 
           {selectedThemes.length > 0 && (
             <div className="mt-3 p-2 rounded-xl border border-border bg-surface/60">
-              <div className="text-xs text-muted mb-1">선택 순서 (중복 허용)</div>
+              <div className="text-xs text-muted mb-1">선택 목록</div>
               <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                 {selectedThemes.map((theme, idx) => (
                   <span

@@ -20,6 +20,8 @@ export default function GenerateButtons() {
   const selectedTheme = useAppStore((s) => s.selectedTheme);
   const selectedThemes = useAppStore((s) => s.selectedThemes);
   const customThemeInput = useAppStore((s) => s.customThemeInput);
+  const editedDialogs = useAppStore((s) => s.editedDialogs);
+  const editedOutfits = useAppStore((s) => s.editedOutfits);
   const isGeneratingStories = useAppStore((s) => s.isGeneratingStories);
   const regenerateRequested = useAppStore((s) => s.regenerateRequested);
   const activeProvider = useAppStore((s) => s.activeProvider);
@@ -27,6 +29,7 @@ export default function GenerateButtons() {
   const selectedModels = useAppStore((s) => s.selectedModels);
   const setGeneratedStories = useAppStore((s) => s.setGeneratedStories);
   const setGeneratedPrompts = useAppStore((s) => s.setGeneratedPrompts);
+  const generatedStories = useAppStore((s) => s.generatedStories);
   const setSelectedStory = useAppStore((s) => s.setSelectedStory);
   const setGeneratingStories = useAppStore((s) => s.setGeneratingStories);
   const setGenerationPhase = useAppStore((s) => s.setGenerationPhase);
@@ -71,21 +74,28 @@ export default function GenerateButtons() {
       ? selectedThemes.map((t) => t.name).join(', ')
       : (selectedTheme?.name ?? customThemeInput);
 
-    return stories.map((story) =>
-      buildPrompt({
+    return stories.map((story, idx) => {
+      const mergedStory = {
+        ...story,
+        dialog: editedDialogs[idx] ?? story.dialog,
+      };
+      const outfits = editedOutfits[idx] ?? [];
+
+      return buildPrompt({
         style,
         character: story.character,
         theme: { name: story.theme?.trim() || defaultThemeName },
-        story,
+        story: mergedStory,
+        outfits,
         panels: effectivePanels,
         cols: layout.cols,
         rows: layout.rows,
         dialogLanguage,
         contentMode,
         signature,
-      }),
-    );
-  }, [selectedStyle, customStyleInput, originalStylePrompt, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, contentMode, signature]);
+      });
+    });
+  }, [selectedStyle, customStyleInput, originalStylePrompt, selectedTheme, selectedThemes, customThemeInput, editedDialogs, editedOutfits, effectivePanels, dialogLanguage, contentMode, signature]);
 
   const handleGenerate = useCallback(async () => {
     if (!ready || isGeneratingRef.current) return;
@@ -209,6 +219,12 @@ export default function GenerateButtons() {
       handleGenerate();
     }
   }, [regenerateRequested, isGeneratingStories, clearRegenerateRequest, handleGenerate]);
+
+  useEffect(() => {
+    if (generatedStories.length === 0) return;
+    const prompts = buildAllPrompts(generatedStories);
+    setGeneratedPrompts(prompts);
+  }, [generatedStories, editedDialogs, editedOutfits, buildAllPrompts, setGeneratedPrompts]);
 
   useEffect(() => {
     return () => abortCurrentRequest();

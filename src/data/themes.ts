@@ -31,7 +31,7 @@ export const themeMetaList: ThemeMeta[] = [
   { key: '직장생활', name: '직장생활', emoji: '💼', description: '야근, 눈치, 회의 지옥, 월요병', category: '일상' },
   { key: '시험불안', name: '시험불안', emoji: '📝', description: '벼락치기, 머리 백지, 시험 후 자책', category: '일상' },
   { key: '코딩번아웃', name: '코딩번아웃', emoji: '💻', description: '버그 지옥, 야근, 기술 부채', category: '일상' },
-  // 19금 (섹드립 수준 — 이미지 생성 가능한 수위)
+  // 19금
   { key: '야한상상', name: '야한 상상', emoji: '🫣', description: '은밀한 망상, 갑자기 떠오르는 야릇한 생각', category: '19금' },
   { key: '야한실수', name: '야한 실수', emoji: '😳', description: '의도치 않은 신체 접촉, 민망한 순간', category: '19금' },
   { key: '썸탈때', name: '썸 탈 때', emoji: '🫠', description: '설레는 스킨십, 심쿵 순간, 야릇한 눈빛', category: '19금' },
@@ -40,4 +40,14 @@ export const themeMetaList: ThemeMeta[] = [
   { key: '혼자만의밤', name: '혼자만의 밤', emoji: '🛏️', description: '야한 영상 들킬 뻔, 혼자 부끄러운 순간', category: '19금' },
   { key: '수영장에피소드', name: '수영장 에피소드', emoji: '👙', description: '비키니 시선 강탈, 선크림 발라주기', category: '19금' },
   { key: '오해받는상황', name: '오해받는 상황', emoji: '🤭', description: '야한 소리로 오해, 엉뚱한 자세 들킴', category: '19금' },
+  { key: '생리', name: '생리', emoji: '🩸', description: '생리통, 예민함, 컨디션 급변, 파트너 배려 이슈', category: '19금' },
+  { key: '섹스', name: '섹스', emoji: '❤️‍🔥', description: '합의된 성관계 전후 긴장감, 텐션, 서로 다른 기대치', category: '19금' },
+  { key: '발기부전', name: '발기부전', emoji: '🥀', description: '퍼포먼스 불안, 자존감 흔들림, 관계 대화의 어려움', category: '19금' },
+  { key: '오르가즘', name: '오르가즘', emoji: '🌊', description: '절정 타이밍 차이, 만족도 차이, 소통의 필요', category: '19금' },
+  { key: '피임', name: '피임', emoji: '🛡️', description: '피임 방식 선택, 책임 분담, 순간 판단의 긴장감', category: '19금' },
+  { key: '성욕불일치', name: '성욕 불일치', emoji: '⚖️', description: '욕구 온도차, 거절의 상처, 타협과 조율', category: '19금' },
+  { key: '애무', name: '애무', emoji: '💞', description: '전희 텐션, 호흡 맞추기, 리액션 해석의 오해', category: '19금' },
+  { key: '관계후현타', name: '관계 후 현타', emoji: '🫥', description: '끝난 뒤 공허함, 애정 확인 욕구, 거리감 불안', category: '19금' },
+  { key: '모텔데이트', name: '모텔 데이트', emoji: '🏩', description: '입실 전 어색함, 기대와 현실 괴리, 분위기 세팅', category: '19금' },
+  { key: '콘돔실수', name: '콘돔 실수', emoji: '📦', description: '준비 부족, 타이밍 꼬임, 민망한 위기 상황', category: '19금' },
 ];

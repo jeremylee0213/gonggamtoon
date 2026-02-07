@@ -1,34 +1,33 @@
 import { useState } from 'react';
-import { Edit3, X, Check } from 'lucide-react';
+import { Shirt, X, Check } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import type { GeneratedStory } from '../../types';
 import { showToast } from '../common/Toast';
 
-/** Dialog editor for manual dialog editing (#26) */
-interface DialogEditorProps {
+interface OutfitEditorProps {
   story: GeneratedStory;
   index: number;
 }
 
-export default function DialogEditor({ story, index }: DialogEditorProps) {
-  const editedDialogs = useAppStore((s) => s.editedDialogs);
-  const setEditedDialogs = useAppStore((s) => s.setEditedDialogs);
+export default function OutfitEditor({ story, index }: OutfitEditorProps) {
+  const editedOutfits = useAppStore((s) => s.editedOutfits);
+  const setEditedOutfits = useAppStore((s) => s.setEditedOutfits);
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts] = useState<string[]>([]);
 
-  const currentDialogs = editedDialogs[index] ?? story.dialog;
+  const currentOutfits = editedOutfits[index] ?? Array(story.dialog.length).fill('');
 
   const startEditing = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setDrafts([...currentDialogs]);
+    setDrafts([...currentOutfits]);
     setEditing(true);
   };
 
   const save = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setEditedDialogs(index, drafts);
+    setEditedOutfits(index, drafts);
     setEditing(false);
-    showToast('대사가 수정되었어요! 프롬프트에 반영됩니다.', 'success');
+    showToast('컷별 복장 설정이 저장되었어요! 프롬프트에 반영됩니다.', 'success');
   };
 
   const cancel = (e: React.MouseEvent) => {
@@ -41,11 +40,11 @@ export default function DialogEditor({ story, index }: DialogEditorProps) {
       <button
         type="button"
         onClick={startEditing}
-        className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-accent border border-accent/40 bg-accent-light rounded-xl cursor-pointer hover:shadow-sm"
+        className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-warning border border-warning/40 bg-[#FFF8EC] rounded-xl cursor-pointer hover:shadow-sm"
       >
-        <Edit3 className="w-4 h-4" />
-        대사 편집
-        {editedDialogs[index] && <span className="text-[11px] text-warning">(수정됨)</span>}
+        <Shirt className="w-4 h-4" />
+        복장 편집
+        {editedOutfits[index] && <span className="text-[11px] text-warning">(수정됨)</span>}
       </button>
     );
   }
@@ -63,7 +62,8 @@ export default function DialogEditor({ story, index }: DialogEditorProps) {
               next[i] = e.target.value;
               setDrafts(next);
             }}
-            className="flex-1 text-sm px-3 py-2 border border-border rounded-xl bg-white focus:outline-none focus:border-accent dark:bg-card"
+            placeholder="예: 검정 정장 + loosen tie"
+            className="flex-1 text-sm px-3 py-2 border border-border rounded-xl bg-white focus:outline-none focus:border-warning dark:bg-card"
           />
         </div>
       ))}
@@ -71,7 +71,7 @@ export default function DialogEditor({ story, index }: DialogEditorProps) {
         <button
           type="button"
           onClick={save}
-          className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold bg-accent text-white rounded-xl cursor-pointer hover:opacity-90"
+          className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold bg-warning text-white rounded-xl cursor-pointer hover:opacity-90"
         >
           <Check className="w-4 h-4" />
           저장
@@ -88,3 +88,4 @@ export default function DialogEditor({ story, index }: DialogEditorProps) {
     </div>
   );
 }
+

@@ -68,6 +68,7 @@ export interface PromptConfig {
   character: string;
   theme: { name: string };
   story: Story;
+  outfits?: string[];
   panels: number;
   cols: number;
   rows: number;

@@ -48,7 +48,7 @@ const LANG_TEXT_RULES: Record<string, string> = {
 };
 
 export function buildPrompt(config: PromptConfig): string {
-  const { style, character, theme, story, panels, cols, rows, dialogLanguage, contentMode } = config;
+  const { style, character, theme, story, outfits = [], panels, cols, rows, dialogLanguage, contentMode } = config;
   const sig = config.signature ?? 'Jeremy';
   const { dialog: dialogs, kick, narration, desc } = story;
   const isOriginalStyle = style.name === '오리지널 캐릭터' || style.en.toLowerCase().includes('original character');
@@ -78,6 +78,9 @@ export function buildPrompt(config: PromptConfig): string {
   prompt += `• 상황: ${desc}\n`;
   prompt += `• 그리드: ${cols}×${rows} (총 ${panels}컷)\n`;
   prompt += `• 반전: ${kick}\n\n`;
+  if (outfits.some((o) => o && o.trim())) {
+    prompt += `• 컷별 복장 지정: 사용자가 입력한 컷별 복장을 최우선으로 반영\n\n`;
+  }
 
   // 【텍스트 규칙 — 언어별】
   const lang = dialogLanguage ?? 'ko';
@@ -133,6 +136,7 @@ export function buildPrompt(config: PromptConfig): string {
     const phaseStyle = phaseFonts[phase] ?? phaseFonts['도입'];
     const composition = getPanelComposition(idx, panels);
     const num = CIRCLE_NUMBERS[idx] ?? `(${i})`;
+    const outfitForPanel = outfits[idx]?.trim();
 
     prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
     prompt += `[컷 ${num}] ${phase} | ${phaseStyle}\n`;
@@ -142,6 +146,7 @@ export function buildPrompt(config: PromptConfig): string {
       prompt += `📍 구도: ${composition}\n`;
       prompt += `🏷️ 제목: 패널 상단 "${story.title}" (${font.title}) + "${desc}" (작게)\n`;
       prompt += `👤 ${character}: 첫 등장 — 시그니처 포즈, 밝은 기대 표정\n`;
+      if (outfitForPanel) prompt += `👗 복장: ${outfitForPanel}\n`;
       prompt += `🎭 표정: 눈 반짝, 입꼬리 올라감, 기대에 찬 모습\n`;
       prompt += `🏠 배경: ${theme.name} 주제의 일상 배경, 따뜻한 색감, 소품 배치\n`;
       prompt += `💬 대사: "${dialogs[0]}" → ${emotionStyle}\n`;
@@ -151,6 +156,7 @@ export function buildPrompt(config: PromptConfig): string {
     } else if (isLast) {
       prompt += `📍 구도: ${composition}\n`;
       prompt += `👤 ${character}: 반전 결과 최종 리액션\n`;
+      if (outfitForPanel) prompt += `👗 복장: ${outfitForPanel}\n`;
       prompt += `🎭 표정: AI가 ${kick} 결과에 맞는 표정 결정 (체념/허탈/자조적 웃음 등)\n`;
       prompt += `🏠 배경: 결과가 시각적으로 드러나는 배경 + 소품\n`;
       prompt += `💬 대사: "${dialogs[dialogs.length - 1]}" → ${emotionFonts.sad}\n`;
@@ -162,6 +168,7 @@ export function buildPrompt(config: PromptConfig): string {
     } else if (isKick) {
       prompt += `📍 구도: ${composition} ⭐ 핵심 반전!\n`;
       prompt += `👤 ${character}: ${kick} 순간의 극적 포즈!\n`;
+      if (outfitForPanel) prompt += `👗 복장: ${outfitForPanel}\n`;
       prompt += `🎭 표정: 최대 리액션 — AI가 극대화 (눈 동그래짐/턱 빠짐/얼굴 일그러짐)\n`;
       prompt += `🏠 배경: 반전 강조 (집중선/색상 반전/충격파)\n`;
       prompt += `💬 대사: "${dialog}" → ${emotionFonts.shouting}\n`;
@@ -174,6 +181,7 @@ export function buildPrompt(config: PromptConfig): string {
     } else {
       prompt += `📍 구도: ${composition}\n`;
       prompt += `👤 ${character}: AI가 흐름에 맞는 구체 행동 결정\n`;
+      if (outfitForPanel) prompt += `👗 복장: ${outfitForPanel}\n`;
       prompt += `  (예: 걷기/핸드폰 보기/고개 갸웃/한숨/손짓 등)\n`;
       prompt += `🎭 표정: ${phase}에 맞는 표정 — AI가 감정 흐름 고려\n`;
       prompt += `🏠 배경: 이전 컷과 연속 + 시간/상황 변화 반영\n`;

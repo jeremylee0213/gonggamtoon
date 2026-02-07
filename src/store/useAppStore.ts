@@ -43,6 +43,7 @@ interface AppState {
 
   // 대사 편집 (#26)
   editedDialogs: Record<number, string[]>;
+  editedOutfits: Record<number, string[]>;
 
   // 복사 추적 (#13)
   hasEverCopied: boolean;
@@ -95,6 +96,8 @@ interface AppState {
   // 액션 - 대사 편집
   setEditedDialogs: (index: number, dialogs: string[]) => void;
   clearEditedDialogs: () => void;
+  setEditedOutfits: (index: number, outfits: string[]) => void;
+  clearEditedOutfits: () => void;
 
   // 액션 - 복사 추적
   markCopied: () => void;
@@ -155,6 +158,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   generationPhase: '',
 
   editedDialogs: {},
+  editedOutfits: {},
   hasEverCopied: false,
 
   activeProvider: 'openai',
@@ -182,6 +186,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     generatedPrompts: [],
     selectedStory: null,
     editedDialogs: {},
+    editedOutfits: {},
   })),
   setCustomStyleInput: (text) => set({
     customStyleInput: text,
@@ -191,6 +196,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     generatedPrompts: [],
     selectedStory: null,
     editedDialogs: {},
+    editedOutfits: {},
   }),
   setOriginalStylePrompt: (text) => set({
     originalStylePrompt: text,
@@ -198,27 +204,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     generatedPrompts: [],
     selectedStory: null,
     editedDialogs: {},
+    editedOutfits: {},
   }),
-  setPanels: (panels) => set({ selectedPanels: panels, customPanelCount: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
-  setCustomPanelCount: (count) => set({ customPanelCount: count, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
+  setPanels: (panels) => set({ selectedPanels: panels, customPanelCount: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {}, editedOutfits: {} }),
+  setCustomPanelCount: (count) => set({ customPanelCount: count, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {}, editedOutfits: {} }),
   setTheme: (theme) => set((state) => {
     if (!theme) {
-      return { selectedTheme: null, selectedThemes: [], customThemeInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} };
+      return { selectedTheme: null, selectedThemes: [], customThemeInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {}, editedOutfits: {} };
     }
-    const nextThemes = [...state.selectedThemes, theme];
-    return {
-      selectedTheme: theme,
-      selectedThemes: nextThemes,
-      customThemeInput: '',
-      generatedStories: [],
-      generatedPrompts: [],
-      selectedStory: null,
-      editedDialogs: {},
-    };
-  }),
-  addThemes: (themes) => set((state) => {
-    if (themes.length === 0) return {};
-    const nextThemes = [...state.selectedThemes, ...themes];
+    const alreadySelected = state.selectedThemes.some((t) => t.key === theme.key);
+    const nextThemes = alreadySelected
+      ? state.selectedThemes.filter((t) => t.key !== theme.key)
+      : [...state.selectedThemes, theme];
     return {
       selectedTheme: nextThemes[nextThemes.length - 1] ?? null,
       selectedThemes: nextThemes,
@@ -227,6 +224,23 @@ export const useAppStore = create<AppState>((set, get) => ({
       generatedPrompts: [],
       selectedStory: null,
       editedDialogs: {},
+      editedOutfits: {},
+    };
+  }),
+  addThemes: (themes) => set((state) => {
+    if (themes.length === 0) return {};
+    const existing = new Set(state.selectedThemes.map((t) => t.key));
+    const additions = themes.filter((t) => !existing.has(t.key));
+    const nextThemes = [...state.selectedThemes, ...additions];
+    return {
+      selectedTheme: nextThemes[nextThemes.length - 1] ?? null,
+      selectedThemes: nextThemes,
+      customThemeInput: '',
+      generatedStories: [],
+      generatedPrompts: [],
+      selectedStory: null,
+      editedDialogs: {},
+      editedOutfits: {},
     };
   }),
   removeThemeAt: (index) => set((state) => {
@@ -238,6 +252,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       generatedPrompts: [],
       selectedStory: null,
       editedDialogs: {},
+      editedOutfits: {},
     };
   }),
   clearThemes: () => set({
@@ -248,8 +263,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     generatedPrompts: [],
     selectedStory: null,
     editedDialogs: {},
+    editedOutfits: {},
   }),
-  setCustomThemeInput: (text) => set({ customThemeInput: text, selectedTheme: null, selectedThemes: [], generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
+  setCustomThemeInput: (text) => set({ customThemeInput: text, selectedTheme: null, selectedThemes: [], generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {}, editedOutfits: {} }),
   setDialogLanguage: (lang) => set({ dialogLanguage: lang, customLanguageInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null }),
   setCustomLanguageInput: (text) => set({ customLanguageInput: text, dialogLanguage: 'custom', generatedStories: [], generatedPrompts: [], selectedStory: null }),
   setContentMode: (mode) => set({ contentMode: mode, generatedStories: [], generatedPrompts: [], selectedStory: null }),
@@ -267,7 +283,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSerialEpisodeCount: (count) => set({ serialEpisodeCount: Math.max(2, Math.min(20, count)) }),
   setPreviousEpisodeSummary: (text) => set({ previousEpisodeSummary: text }),
 
-  setGeneratedStories: (stories) => set({ generatedStories: stories, selectedStory: null, generatedPrompts: [], editedDialogs: {} }),
+  setGeneratedStories: (stories) => set({ generatedStories: stories, selectedStory: null, generatedPrompts: [], editedDialogs: {}, editedOutfits: {} }),
   setGeneratedPrompts: (prompts) => set({ generatedPrompts: prompts }),
   setSelectedStory: (story) => set({ selectedStory: story }),
   setGeneratingStories: (loading) => set({ isGeneratingStories: loading, generationPhase: loading ? 'API 요청 중...' : '' }),
@@ -280,6 +296,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     editedDialogs: { ...state.editedDialogs, [index]: dialogs },
   })),
   clearEditedDialogs: () => set({ editedDialogs: {} }),
+  setEditedOutfits: (index, outfits) => set((state) => ({
+    editedOutfits: { ...state.editedOutfits, [index]: outfits },
+  })),
+  clearEditedOutfits: () => set({ editedOutfits: {} }),
 
   // 복사 추적
   markCopied: () => set({ hasEverCopied: true }),
@@ -364,6 +384,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     regenerateRequested: false,
     generationPhase: '',
     editedDialogs: {},
+    editedOutfits: {},
     messages: [],
   }),
 

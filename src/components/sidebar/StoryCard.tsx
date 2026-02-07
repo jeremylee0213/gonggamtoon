@@ -4,6 +4,7 @@ import type { GeneratedStory } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
 import EmotionCurve from '../common/EmotionCurve';
 import DialogEditor from './DialogEditor';
+import OutfitEditor from './OutfitEditor';
 
 interface StoryCardProps {
   story: GeneratedStory;
@@ -103,7 +104,10 @@ export default memo(function StoryCard({ story, index, selected, onSelect, theme
         </div>
       )}
 
-      <DialogEditor story={story} index={index} />
+      <div className="mt-2 flex flex-wrap gap-2">
+        <DialogEditor story={story} index={index} />
+        <OutfitEditor story={story} index={index} />
+      </div>
     </div>
   );
 });
