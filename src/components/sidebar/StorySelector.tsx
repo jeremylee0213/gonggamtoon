@@ -107,6 +107,7 @@ export default function StorySelector() {
                 <th className="px-3 py-2 text-left font-medium">#</th>
                 <th className="px-3 py-2 text-left font-medium">제목</th>
                 <th className="px-3 py-2 text-left font-medium">캐릭터</th>
+                <th className="px-3 py-2 text-left font-medium">주제</th>
                 <th className="px-3 py-2 text-left font-medium">반전</th>
               </tr>
             </thead>
@@ -130,6 +131,9 @@ export default function StorySelector() {
                     </td>
                     <td className="px-3 py-2.5">
                       <span className="bg-char text-white rounded-full px-2 py-0.5 text-xs">{story.character}</span>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <span className="bg-accent text-white rounded-full px-2 py-0.5 text-xs">{story.theme?.trim() || themeName}</span>
                     </td>
                     <td className="px-3 py-2.5 text-primary text-xs">{story.kick}</td>
                   </tr>
@@ -159,7 +163,7 @@ export default function StorySelector() {
                 index={idx}
                 selected={selectedStory?.title === story.title && selectedStory?.character === story.character}
                 onSelect={() => handleSelectStory(story, idx)}
-                themeName={themeName}
+                themeName={story.theme?.trim() || themeName}
                 copied={copiedIndex === idx}
                 episodeLabel={serialMode ? `${story.episode ?? idx + 1}화` : undefined}
               />

@@ -83,15 +83,12 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     .join(', ');
   const langName = dialogLanguage === 'custom' ? customLanguageInput : LANGUAGE_NAMES[dialogLanguage];
   const generationCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : STORY_GENERATION_COUNT;
+  const multiThemeRandomSeed = Math.floor(Math.random() * 1_000_000);
   const normalizedCharacterPlan = (
     characterPlan.length === generationCount
       ? characterPlan
       : Array.from({ length: generationCount }, (_, i) => styleCharacterPool[i % styleCharacterPool.length])
   ).map((name) => name.trim());
-  const themeAssignmentGuide = resolvedThemes.length > 0
-    ? Array.from({ length: generationCount }, (_, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`} 중심 주제: ${resolvedThemes[i % resolvedThemes.length].name}`)
-        .join('\n')
-    : '';
   const characterAssignmentGuide = normalizedCharacterPlan
     .map((name, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: ${name}`)
     .join('\n');
@@ -132,10 +129,19 @@ ${MODE_INSTRUCTIONS[contentMode]}
 
 ${EMPATHY_GUIDE}`;
 
-  if (resolvedThemes.length > 0) {
-    prompt += `\n• 다중 주제 우선순위: ${themePriorityLine || themeName}`;
-    prompt += '\n• 주제를 화/스토리별로 순환하거나 혼합하되, 선택된 주제를 모두 반영하세요.';
-    prompt += `\n• ${serialMode ? '화' : '스토리'}별 주제 배정:\n${themeAssignmentGuide}`;
+  if (resolvedThemes.length > 1) {
+    prompt += `\n• 다중 주제 우선순위(중복 선택 반영): ${themePriorityLine || themeName}`;
+    prompt += `\n• 다중 주제 랜덤 시드: ${multiThemeRandomSeed}`;
+    prompt += `\n• ${serialMode ? '화' : '스토리'}별 주제 선정 규칙(필수):`;
+    prompt += `\n  1) 해당 ${serialMode ? '화' : '스토리'}의 character 기준으로 선택된 주제 각각의 적합도를 1~5점으로 평가`;
+    prompt += `\n  2) 최고점(동점 허용) 주제 후보군을 만든 뒤, 랜덤 시드(${multiThemeRandomSeed})와 ${serialMode ? '화' : '스토리'} 번호를 사용해 후보군에서 1개를 랜덤 선택`;
+    prompt += '\n  3) 같은 주제가 연속 반복되면, 다음 후보로 바꿔 다양성을 확보(후보가 1개면 예외)';
+    prompt += `\n  4) 동일 주제가 여러 번 선택되었으면(${themePriorityLine || themeName}) 그 주제의 선택 확률을 더 높게 반영`;
+    prompt += '\n  5) 반드시 선택된 주제만 사용하고, 가능하면 모든 선택 주제를 최소 1회 이상 사용';
+    prompt += `\n  6) 최종 선택된 주제를 각 항목의 "theme" 필드에 1개만 기록`;
+  } else if (resolvedThemes.length === 1) {
+    prompt += `\n• ${serialMode ? '화' : '스토리'} 공감 주제 고정: ${resolvedThemes[0].name}`;
+    prompt += '\n• 각 항목의 "theme" 필드에는 위 주제를 동일하게 작성';
   }
   prompt += `\n\n=== 주인공 배정표 (필수) ===
 아래 배정표를 절대 변경하지 말고 각 항목의 character를 정확히 동일하게 작성하세요.
@@ -188,11 +194,13 @@ ${kickGuide}`;
 JSON 배열 길이는 정확히 ${generationCount}개여야 합니다.
 각 항목의 title에는 반드시 화차를 포함하세요 (예: "1화 - 제목", "2화 - 제목").
 각 항목의 character는 위 주인공 배정표 값과 정확히 일치해야 합니다.
+각 항목의 theme에는 해당 ${serialMode ? '화' : '스토리'}에서 실제로 적용한 공감 주제를 1개만 작성하세요.
 
 [
   {
     "episode": 1,
     "title": "1화 - 스토리 제목 (짧고 임팩트있게, 5~10자)",
+    "theme": "${resolvedThemes[0]?.name ?? (themeName || '공감 주제')}",
     "desc": "상황 한 줄 설명 (어떤 상황인지 구체적으로)",
     "kick": "반전 포인트 + 이모지",
     "dialog": [${Array.from({ length: panelCount }, (_, i) => `"컷${i + 1} 대사"`).join(', ')}],
@@ -251,14 +259,18 @@ export function parseStoryResponse(
     .map((story, index) => {
       const plannedCharacter = characterPlan?.[index]?.trim();
       const parsedCharacter = story.character.trim();
+      const parsedTheme = typeof (story as { theme?: unknown }).theme === 'string'
+        ? (story as { theme?: string }).theme?.trim()
+        : '';
 
       return {
-      ...story,
-      episode: typeof story.episode === 'number' ? story.episode : (expectedCount ? index + 1 : undefined),
-      character: plannedCharacter || parsedCharacter || `주인공${index + 1}`,
-      dialog: story.dialog.length >= panelCount
-        ? story.dialog.slice(0, panelCount)
-        : [...story.dialog, ...Array(panelCount - story.dialog.length).fill('...')],
+        ...story,
+        episode: typeof story.episode === 'number' ? story.episode : (expectedCount ? index + 1 : undefined),
+        theme: parsedTheme || undefined,
+        character: plannedCharacter || parsedCharacter || `주인공${index + 1}`,
+        dialog: story.dialog.length >= panelCount
+          ? story.dialog.slice(0, panelCount)
+          : [...story.dialog, ...Array(panelCount - story.dialog.length).fill('...')],
       };
     });
 

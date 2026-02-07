@@ -22,6 +22,7 @@ export interface Story {
 export interface GeneratedStory extends Story {
   summary: string;
   character: string;
+  theme?: string;
   episode?: number;
 }
 

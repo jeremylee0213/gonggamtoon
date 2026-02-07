@@ -56,7 +56,7 @@ export default function GenerateButtons() {
       chars: ['주인공'],
     };
     const layout = getLayoutForPanels(effectivePanels);
-    const themeName = selectedThemes.length > 0
+    const defaultThemeName = selectedThemes.length > 0
       ? selectedThemes.map((t) => t.name).join(', ')
       : (selectedTheme?.name ?? customThemeInput);
 
@@ -64,7 +64,7 @@ export default function GenerateButtons() {
       buildPrompt({
         style,
         character: story.character,
-        theme: { name: themeName },
+        theme: { name: story.theme?.trim() || defaultThemeName },
         story,
         panels: effectivePanels,
         cols: layout.cols,
