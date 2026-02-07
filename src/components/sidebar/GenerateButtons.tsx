@@ -14,6 +14,7 @@ const BACKOFF_BASE_MS = 1000;
 export default function GenerateButtons() {
   const selectedStyle = useAppStore((s) => s.selectedStyle);
   const customStyleInput = useAppStore((s) => s.customStyleInput);
+  const originalStylePrompt = useAppStore((s) => s.originalStylePrompt);
   const selectedPanels = useAppStore((s) => s.selectedPanels);
   const customPanelCount = useAppStore((s) => s.customPanelCount);
   const selectedTheme = useAppStore((s) => s.selectedTheme);
@@ -49,12 +50,22 @@ export default function GenerateButtons() {
   const isGeneratingRef = useRef(false);
 
   const buildAllPrompts = useCallback((stories: import('../../types').GeneratedStory[]) => {
-    const style = selectedStyle ?? {
-      name: customStyleInput,
-      en: customStyleInput,
-      emoji: '',
-      chars: ['주인공'],
-    };
+    const style = (() => {
+      if (selectedStyle?.name === '오리지널 캐릭터') {
+        const detail = originalStylePrompt.trim();
+        return {
+          ...selectedStyle,
+          en: detail ? `Original Character · ${detail}` : selectedStyle.en,
+        };
+      }
+      if (selectedStyle) return selectedStyle;
+      return {
+        name: customStyleInput,
+        en: customStyleInput,
+        emoji: '',
+        chars: ['주인공'],
+      };
+    })();
     const layout = getLayoutForPanels(effectivePanels);
     const defaultThemeName = selectedThemes.length > 0
       ? selectedThemes.map((t) => t.name).join(', ')
@@ -74,7 +85,7 @@ export default function GenerateButtons() {
         signature,
       }),
     );
-  }, [selectedStyle, customStyleInput, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, contentMode, signature]);
+  }, [selectedStyle, customStyleInput, originalStylePrompt, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, contentMode, signature]);
 
   const handleGenerate = useCallback(async () => {
     if (!ready || isGeneratingRef.current) return;
@@ -97,6 +108,7 @@ export default function GenerateButtons() {
         })(),
         style: selectedStyle,
         customStyleInput,
+        originalStylePrompt,
         themes: selectedThemes,
         theme: selectedTheme,
         customThemeInput,
@@ -182,7 +194,7 @@ export default function GenerateButtons() {
       setGenerationPhase('');
       isGeneratingRef.current = false;
     }
-  }, [ready, selectedStyle, customStyleInput, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, protagonistName, referenceText, serialMode, serialEpisodeCount, previousEpisodeSummary]);
+  }, [ready, selectedStyle, customStyleInput, originalStylePrompt, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, protagonistName, referenceText, serialMode, serialEpisodeCount, previousEpisodeSummary]);
 
   const handleCancel = useCallback(() => {
     abortCurrentRequest();

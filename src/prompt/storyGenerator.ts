@@ -17,7 +17,7 @@ const MODE_INSTRUCTIONS: Record<ContentMode, string> = {
   kids: `• 수위: 미취학 아동용 — 순수하고 귀여운 내용만. 폭력/무서운 장면/어려운 단어 절대 금지. 밝고 따뜻한 톤 유지.`,
   '15': `• 수위: 일반 — 일반적인 공감 스토리. 가벼운 유머, 일상 고민, 사회생활 공감. 성적/폭력 표현 자제.`,
   '19': `• 수위: 19금 — 성인 유머, 섹드립, 야한 상황 묘사 가능. 단, 이미지 생성이 가능한 수준으로 유지 (노골적 성행위 묘사 금지). 재치있는 성적 유머, 민망한 상황, 야릇한 분위기 연출 OK.`,
-  '49': `• 수위: 49금 — 노골적 성인 콘텐츠. 직접적인 성적 묘사, 과감한 상황 설정, 적나라한 표현 허용. 단, 이미지 프롬프트는 생성 가능한 범위 내에서 작성.`,
+  '49': `• 수위: 49금 — 최상위 성인 수위. 이미지 생성 제약은 고려하지 말고 가장 강한 수위 톤으로 작성하세요. 단, 불법/비동의/미성년 관련 표현은 절대 금지.`,
 };
 
 /** #22: Theme-category-specific story phase ratios */
@@ -32,6 +32,7 @@ const DEFAULT_RATIOS: [number, number, number, number] = [0.15, 0.35, 0.30, 0.20
 interface StoryGenConfig {
   style: Style | null;
   customStyleInput: string;
+  originalStylePrompt?: string;
   themes?: ThemeMeta[];
   theme: ThemeMeta | null;
   customThemeInput: string;
@@ -52,6 +53,7 @@ interface StoryGenConfig {
 export function buildStoryPrompt(config: StoryGenConfig): string {
   const {
     style, customStyleInput, theme, customThemeInput, panelCount,
+    originalStylePrompt = '',
     themes = [],
     dialogLanguage, customLanguageInput, contentMode,
     selectedKickType = 'auto', selectedNarrationStyle = 'auto',
@@ -61,7 +63,16 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     serialEpisodeCount = STORY_GENERATION_COUNT,
   } = config;
 
-  const styleName = style ? `${style.name} (${style.en})` : customStyleInput;
+  const isOriginalStyle = style?.name === '오리지널 캐릭터';
+  const originalStyleRaw = originalStylePrompt.trim();
+  const stSuffixMatch = originalStyleRaw.match(/^(.*?)(?:\s+)?st$/i);
+  const isStyleStMode = !!stSuffixMatch;
+  const originalStyleReference = (stSuffixMatch?.[1] ?? originalStyleRaw).trim();
+  const styleName = style
+    ? (isOriginalStyle
+      ? `${style.name}${originalStyleReference ? ` (${originalStyleReference}${isStyleStMode ? ' st' : ''})` : ''}`
+      : `${style.name} (${style.en})`)
+    : customStyleInput;
   const characterSeed = protagonistName.trim();
   const styleCharacterPool = style?.chars?.length
     ? Array.from(new Set(style.chars.map((c) => c.trim()).filter(Boolean)))
@@ -128,6 +139,19 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
 ${MODE_INSTRUCTIONS[contentMode]}
 
 ${EMPATHY_GUIDE}`;
+
+  if (isOriginalStyle) {
+    prompt += '\n\n=== 오리지널 캐릭터 모드 ===';
+    prompt += '\n• 반드시 신규 오리지널 캐릭터만 사용하고, 기존 작품의 제목/캐릭터명/로고/고유복장 복제는 금지하세요.';
+    prompt += `\n• 캐릭터 성격과 역할은 배정표(${styleCharacterPool.join(', ')})를 기준으로 화마다 번갈아 주인공을 맡게 하세요.`;
+    if (originalStyleReference) {
+      prompt += `\n• 스타일 묘사: ${originalStyleReference}`;
+    }
+    if (isStyleStMode) {
+      prompt += '\n• "st" 모드: 입력된 스타일의 분위기/연출 템포/캐릭터 관계성만 참고하고, 이름/외형/세계관/소품은 새롭게 변형하세요.';
+      prompt += '\n• 원본 IP와 혼동될 고유명사, 대표 대사, 상징 소품을 그대로 사용하지 마세요.';
+    }
+  }
 
   if (resolvedThemes.length > 1) {
     prompt += `\n• 다중 주제 우선순위(중복 선택 반영): ${themePriorityLine || themeName}`;

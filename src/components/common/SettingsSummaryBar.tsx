@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 /** Sticky settings summary bar (#20) — shows current selections when scrolled down */
 export default function SettingsSummaryBar() {
   const selectedStyle = useAppStore((s) => s.selectedStyle);
-  const customStyleInput = useAppStore((s) => s.customStyleInput);
+  const getEffectiveStyle = useAppStore((s) => s.getEffectiveStyle);
   const selectedThemes = useAppStore((s) => s.selectedThemes);
   const customThemeInput = useAppStore((s) => s.customThemeInput);
   const selectedPanels = useAppStore((s) => s.selectedPanels);
@@ -11,7 +11,7 @@ export default function SettingsSummaryBar() {
   const dialogLanguage = useAppStore((s) => s.dialogLanguage);
   const contentMode = useAppStore((s) => s.contentMode);
 
-  const styleName = selectedStyle?.name ?? customStyleInput;
+  const styleName = getEffectiveStyle();
   const themeNames = selectedThemes.map((t) => t.name);
   const themeName = themeNames.length > 0
     ? (themeNames.length > 2 ? `${themeNames.slice(0, 2).join(', ')} 외 ${themeNames.length - 2}` : themeNames.join(', '))

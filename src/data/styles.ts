@@ -1,6 +1,7 @@
 import type { Style } from '../types';
 
 export const STYLE_CATEGORIES = [
+  { key: '오리지널', label: '오리지널 캐릭터', emoji: '🆕' },
   { key: '일본', label: '일본 애니메이션', emoji: '🇯🇵' },
   { key: '성인', label: '성인 만화 (섹시)', emoji: '🔞' },
   { key: '서양', label: '서양 카툰', emoji: '🇺🇸' },
@@ -8,6 +9,7 @@ export const STYLE_CATEGORIES = [
 ] as const;
 
 export const styleData: Style[] = [
+  { name: '오리지널 캐릭터', en: 'Original Character', emoji: '🆕', chars: ['열혈 리더', '쿨한 라이벌', '엉뚱한 마스코트'], category: '오리지널' },
   // 일본 애니메이션
   { name: '귀멸의 칼날', en: 'Demon Slayer chibi', emoji: '⚔️', chars: ['젠이츠', '탄지로', '네즈코'], category: '일본' },
   { name: '나루토', en: 'Naruto SD style', emoji: '🍥', chars: ['나루토', '사스케', '히나타'], category: '일본' },

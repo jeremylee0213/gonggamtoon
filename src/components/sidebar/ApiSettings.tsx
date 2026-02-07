@@ -91,6 +91,12 @@ export default function ApiSettings() {
               type={showKey ? 'text' : 'password'}
               value={currentKey}
               onChange={(e) => setApiKey(activeProvider, e.target.value.trim())}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && currentKey.trim()) setCollapsed(true);
+              }}
+              onBlur={() => {
+                if (currentKey.trim()) setCollapsed(true);
+              }}
               placeholder={`${currentProvider?.label} API 키`}
               className={`flex-1 px-4 py-2.5 rounded-xl border text-base shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] ${
                 currentKey

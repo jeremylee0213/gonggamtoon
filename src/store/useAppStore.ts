@@ -13,6 +13,7 @@ interface AppState {
   // 선택 상태
   selectedStyle: Style | null;
   customStyleInput: string;
+  originalStylePrompt: string;
   selectedPanels: number;
   customPanelCount: number | null;
   selectedTheme: ThemeMeta | null;
@@ -60,6 +61,7 @@ interface AppState {
   // 액션 - 선택
   setStyle: (style: Style | null) => void;
   setCustomStyleInput: (text: string) => void;
+  setOriginalStylePrompt: (text: string) => void;
   setPanels: (panels: number) => void;
   setCustomPanelCount: (count: number | null) => void;
   setTheme: (theme: ThemeMeta | null) => void;
@@ -125,6 +127,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set, get) => ({
   selectedStyle: null,
   customStyleInput: '',
+  originalStylePrompt: '',
   selectedPanels: DEFAULT_PANELS,
   customPanelCount: null,
   selectedTheme: null,
@@ -171,8 +174,31 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   messages: [],
 
-  setStyle: (style) => set({ selectedStyle: style, customStyleInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
-  setCustomStyleInput: (text) => set({ customStyleInput: text, selectedStyle: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
+  setStyle: (style) => set((state) => ({
+    selectedStyle: style,
+    customStyleInput: '',
+    originalStylePrompt: style?.name === '오리지널 캐릭터' ? state.originalStylePrompt : '',
+    generatedStories: [],
+    generatedPrompts: [],
+    selectedStory: null,
+    editedDialogs: {},
+  })),
+  setCustomStyleInput: (text) => set({
+    customStyleInput: text,
+    selectedStyle: null,
+    originalStylePrompt: '',
+    generatedStories: [],
+    generatedPrompts: [],
+    selectedStory: null,
+    editedDialogs: {},
+  }),
+  setOriginalStylePrompt: (text) => set({
+    originalStylePrompt: text,
+    generatedStories: [],
+    generatedPrompts: [],
+    selectedStory: null,
+    editedDialogs: {},
+  }),
   setPanels: (panels) => set({ selectedPanels: panels, customPanelCount: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
   setCustomPanelCount: (count) => set({ customPanelCount: count, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
   setTheme: (theme) => set((state) => {
@@ -315,6 +341,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   resetFlow: () => set({
     selectedStyle: null,
     customStyleInput: '',
+    originalStylePrompt: '',
     selectedPanels: DEFAULT_PANELS,
     customPanelCount: null,
     selectedTheme: null,
@@ -342,6 +369,9 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   getEffectiveStyle: () => {
     const s = get();
+    if (s.selectedStyle?.name === '오리지널 캐릭터' && s.originalStylePrompt.trim()) {
+      return `${s.selectedStyle.name} · ${s.originalStylePrompt.trim()}`;
+    }
     return s.selectedStyle?.name ?? s.customStyleInput;
   },
   getEffectiveTheme: () => {

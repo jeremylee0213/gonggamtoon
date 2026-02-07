@@ -82,7 +82,10 @@ export default function AdvancedOptions() {
                 <button
                   key={opt.key}
                   type="button"
-                  onClick={() => setSelectedKickType(opt.key)}
+                  onClick={() => {
+                    setSelectedKickType(opt.key);
+                    setOpen(false);
+                  }}
                   className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-all border ${
                     selectedKickType === opt.key
                       ? 'border-accent bg-accent-light text-accent font-semibold'
@@ -104,7 +107,10 @@ export default function AdvancedOptions() {
                 <button
                   key={opt.key}
                   type="button"
-                  onClick={() => setSelectedNarrationStyle(opt.key)}
+                  onClick={() => {
+                    setSelectedNarrationStyle(opt.key);
+                    setOpen(false);
+                  }}
                   className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-all border ${
                     selectedNarrationStyle === opt.key
                       ? 'border-accent bg-accent-light text-accent font-semibold'
@@ -125,6 +131,9 @@ export default function AdvancedOptions() {
               type="text"
               value={protagonistName}
               onChange={(e) => setProtagonistName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && protagonistName.trim()) setOpen(false);
+              }}
               placeholder="예: 민지(29세, 스타트업 디자이너)"
               className="w-full px-3 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card"
             />
@@ -137,6 +146,9 @@ export default function AdvancedOptions() {
               type="text"
               value={signature}
               onChange={(e) => setSignature(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && signature.trim()) setOpen(false);
+              }}
               placeholder="Jeremy"
               className="w-full px-3 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card"
             />
@@ -148,6 +160,9 @@ export default function AdvancedOptions() {
             <textarea
               value={referenceText}
               onChange={(e) => setReferenceText(e.target.value)}
+              onBlur={() => {
+                if (referenceText.trim()) setOpen(false);
+              }}
               placeholder="참고할 공감툰 내용이나 분위기를 입력하세요..."
               rows={2}
               className="w-full px-3 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card resize-none"

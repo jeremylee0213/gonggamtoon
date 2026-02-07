@@ -35,12 +35,12 @@ export default function MainContent() {
       <div className="flex gap-4 max-lg:flex-col">
         {/* Left: Settings */}
         <aside className="w-[380px] min-w-[380px] max-lg:w-full max-lg:min-w-0 space-y-3 shrink-0">
-          <section id="section-serial">
-            <SerialModeSelector />
-          </section>
-
           <section id="section-api">
             <ApiSettings />
+          </section>
+
+          <section id="section-serial">
+            <SerialModeSelector />
           </section>
 
           <section id="section-style">
@@ -51,15 +51,16 @@ export default function MainContent() {
             <ThemeSelector />
           </section>
 
-          {/* Language + Panels + Mode */}
-          <section className="bg-card border border-border rounded-2xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:items-center">
-              <LanguageSelector />
-              <PanelSelector />
-              <div className="sm:col-span-2">
-                <ModeSelector />
-              </div>
-            </div>
+          <section id="section-language">
+            <LanguageSelector />
+          </section>
+
+          <section id="section-panels">
+            <PanelSelector />
+          </section>
+
+          <section id="section-mode">
+            <ModeSelector />
           </section>
 
           <section id="section-generate">
