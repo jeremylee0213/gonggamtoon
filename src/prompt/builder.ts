@@ -96,7 +96,9 @@ export function buildPrompt(config: PromptConfig): string {
 
   // 【레이아웃】
   prompt += `【📐 레이아웃】\n`;
-  prompt += `• 1:1 정사각형 전체 이미지, HIGH QUALITY\n`;
+  prompt += `• 1:1 정사각형 전체 이미지\n`;
+  prompt += `• 출력 해상도: 4096x4096 (4K UHD) 고정\n`;
+  prompt += `• 저해상도/블러/압축 아티팩트 금지, 선명한 라인과 텍스트 품질 유지\n`;
   prompt += `• ${cols}x${rows} 균등 그리드, 패널 사이 얇은 검정 테두리\n`;
   prompt += `• 각 패널 좌상단: 작은 원형 번호 (${CIRCLE_NUMBERS.slice(0, panels).join('')}) — 회색 반투명 원 위에 흰색 숫자\n`;
   prompt += `• 읽기 순서: 좌→우, 상→하\n\n`;
@@ -205,6 +207,7 @@ export function buildPrompt(config: PromptConfig): string {
   prompt += `• 패널 번호 ${CIRCLE_NUMBERS.slice(0, panels).join('')} 좌상단 작은 원형\n`;
   prompt += `• 첫 컷 상단: "${story.title}" + "${desc}"\n`;
   prompt += `• ⚠️ ${lang === 'ko' ? '한글' : lang === 'ja' ? '日本語' : lang === 'zh' ? '中文' : 'Text'} 완벽 렌더링 ⚠️\n`;
+  prompt += `• 최종 출력: 4096x4096 (4K UHD)\n`;
   prompt += `• 마지막 컷 하단: "${narration}" 크게\n`;
   prompt += `• 서명 "by ${sig}" 필기체\n`;
   prompt += `• 감정 곡선: 밝음→몰입→충격→여운\n`;
