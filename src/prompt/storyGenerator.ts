@@ -49,8 +49,10 @@ interface StoryGenConfig {
   contentMode: ContentMode;
   selectedKickType?: string;
   selectedNarrationStyle?: string;
+  protagonistName?: string;
   referenceText?: string;
   serialMode?: boolean;
+  serialEpisodeCount?: number;
   previousEpisodeSummary?: string;
   empathyIntensity?: number;
 }
@@ -60,16 +62,19 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     style, customStyleInput, theme, customThemeInput, panelCount,
     dialogLanguage, customLanguageInput, contentMode,
     selectedKickType = 'auto', selectedNarrationStyle = 'auto',
+    protagonistName = '',
     referenceText = '', serialMode = false, previousEpisodeSummary = '',
+    serialEpisodeCount = STORY_GENERATION_COUNT,
     empathyIntensity = 3,
   } = config;
 
   const styleName = style ? `${style.name} (${style.en})` : customStyleInput;
-  const character = style ? style.chars[Math.floor(Math.random() * style.chars.length)] : '주인공';
+  const character = protagonistName.trim() || (style ? style.chars[Math.floor(Math.random() * style.chars.length)] : '주인공');
   const themeName = theme ? theme.name : customThemeInput;
   const themeDesc = theme ? theme.description : '';
   const themeCategory = theme?.category ?? '';
   const langName = dialogLanguage === 'custom' ? customLanguageInput : LANGUAGE_NAMES[dialogLanguage];
+  const generationCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : STORY_GENERATION_COUNT;
 
   // #22: Theme-specific ratios
   const ratios = PHASE_RATIOS[themeCategory] ?? DEFAULT_RATIOS;
@@ -92,9 +97,11 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
 
   // #30: Empathy intensity
   const empathyLevel = EMPATHY_LEVELS[empathyIntensity] ?? EMPATHY_LEVELS[3];
+  const toneGuide = Array.from({ length: generationCount }, (_, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: ${TONE_PRESETS[i % TONE_PRESETS.length]}`).join('\n');
+  const kickGuide = Array.from({ length: generationCount }, (_, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: ${KICK_TYPES[i % KICK_TYPES.length]}`).join('\n');
 
   let prompt = `${STORY_SYSTEM_ROLE}
-아래 조건에 맞는 공감툰 스토리를 정확히 ${STORY_GENERATION_COUNT}개 생성해주세요.
+아래 조건에 맞는 공감툰 스토리를 정확히 ${generationCount}개 생성해주세요.
 
 === 조건 ===
 • 만화 스타일: ${styleName}
@@ -113,9 +120,15 @@ ${EMPATHY_GUIDE}`;
   }
 
   // #29: Serial mode
-  if (serialMode && previousEpisodeSummary.trim()) {
-    prompt += `\n\n=== 연재 모드 (다음 회차) ===\n이전 회차 요약: "${previousEpisodeSummary.trim()}"
-이전 회차와 자연스럽게 이어지는 다음 회차 스토리를 생성하세요. 캐릭터와 세계관 유지, 새로운 사건 전개.`;
+  if (serialMode) {
+    prompt += `\n\n=== 연재 모드 ===
+총 ${generationCount}화를 한 번에 작성하세요.
+각 화는 해당 화 안에서 사건이 마무리되도록 완결성을 갖추되, 다음 화가 자연스럽게 이어지도록 연결고리를 남기세요.
+1화에서 만든 캐릭터 관계/소품/감정 변화는 다음 화로 누적 반영하세요.
+제목은 반드시 "${langName}"로 작성하고, 형식은 "1화: ...", "2화: ..."처럼 화차를 명시하세요.`;
+    if (previousEpisodeSummary.trim()) {
+      prompt += `\n\n이전 시즌/이전 화 요약: "${previousEpisodeSummary.trim()}"`;
+    }
   }
 
   prompt += `
@@ -127,17 +140,13 @@ ${EMPATHY_GUIDE}`;
 • 결말 (${ending}컷): 여운 있는 마무리, 내레이션으로 감성 마무리
 
 ${STORY_RULES}
-2. 각 스토리별 톤 분배:
-   - 스토리1: ${TONE_PRESETS[0]}
-   - 스토리2: ${TONE_PRESETS[1]}
-   - 스토리3: ${TONE_PRESETS[2]}`;
+2. 각 ${serialMode ? '화' : '스토리'}별 톤 분배:
+${toneGuide}`;
 
   if (selectedKickType === 'auto') {
     prompt += `
 3. 반전(kick) 유형 분배 (각각 다르게):
-   - 스토리1: ${KICK_TYPES[0]}
-   - 스토리2: ${KICK_TYPES[1]}
-   - 스토리3: ${KICK_TYPES[2]}`;
+${kickGuide}`;
   }
 
   prompt += `
@@ -146,9 +155,11 @@ ${STORY_RULES}
 === 출력 형식 ===
 반드시 아래 JSON 배열 형식으로만 응답하세요. 다른 설명이나 마크다운은 절대 포함하지 마세요.
 모든 텍스트 필드(title, desc, kick, dialog, narration, summary)는 반드시 ${langName}로 작성하세요.
+JSON 배열 길이는 정확히 ${generationCount}개여야 합니다.
 
 [
   {
+    "episode": ${serialMode ? 1 : 0},
     "title": "스토리 제목 (짧고 임팩트있게, 5~10자)",
     "desc": "상황 한 줄 설명 (어떤 상황인지 구체적으로)",
     "kick": "반전 포인트 + 이모지",
@@ -164,7 +175,7 @@ ${JSON_FORMAT_INSTRUCTION}`;
   return prompt;
 }
 
-export function parseStoryResponse(text: string, panelCount: number): GeneratedStory[] {
+export function parseStoryResponse(text: string, panelCount: number, expectedCount?: number): GeneratedStory[] {
   let jsonStr = text.trim();
 
   const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -188,7 +199,7 @@ export function parseStoryResponse(text: string, panelCount: number): GeneratedS
     throw new Error('응답이 JSON 배열 형식이 아닙니다.');
   }
 
-  return parsed
+  const normalized = parsed
     .filter((story): story is GeneratedStory => {
       return (
         typeof story.title === 'string' &&
@@ -206,4 +217,10 @@ export function parseStoryResponse(text: string, panelCount: number): GeneratedS
         ? story.dialog.slice(0, panelCount)
         : [...story.dialog, ...Array(panelCount - story.dialog.length).fill('...')],
     }));
+
+  if (expectedCount && normalized.length < expectedCount) {
+    throw new Error(`응답에서 ${expectedCount}개의 스토리를 모두 파싱하지 못했습니다.`);
+  }
+
+  return expectedCount ? normalized.slice(0, expectedCount) : normalized;
 }

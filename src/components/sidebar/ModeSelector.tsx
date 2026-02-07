@@ -13,29 +13,23 @@ export default function ModeSelector() {
   const setContentMode = useAppStore((s) => s.setContentMode);
 
   return (
-    <div>
-      <span className="text-sm font-bold text-text block mb-1.5">수위</span>
-      <div className="flex gap-1">
-        {MODES.map((mode) => {
-          const isSelected = contentMode === mode.key;
-          return (
-            <button
-              key={mode.key}
-              type="button"
-              onClick={() => setContentMode(mode.key)}
-              className={`
-                flex-1 px-2 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all border
-                ${isSelected
-                  ? 'border-primary bg-primary-light text-primary-dark font-semibold'
-                  : 'border-border bg-white text-text hover:bg-surface dark:bg-card'
-                }
-              `}
-            >
-              {mode.emoji} {mode.label}
-            </button>
-          );
-        })}
-      </div>
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
+        5
+      </span>
+      <span className="text-sm font-bold text-text shrink-0">수위</span>
+      <select
+        value={contentMode}
+        onChange={(e) => setContentMode(e.target.value as ContentMode)}
+        className="min-w-0 flex-1 px-2.5 py-1.5 text-sm border border-border rounded-lg bg-white focus:outline-none focus:border-primary dark:bg-card"
+        aria-label="수위 선택"
+      >
+        {MODES.map((mode) => (
+          <option key={mode.key} value={mode.key}>
+            {mode.emoji} {mode.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

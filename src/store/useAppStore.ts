@@ -24,9 +24,11 @@ interface AppState {
   // 고급 옵션 (#23, #24, #25, #27, #29, #30)
   selectedKickType: string;
   selectedNarrationStyle: string;
+  protagonistName: string;
   signature: string;
   referenceText: string;
   serialMode: boolean;
+  serialEpisodeCount: number;
   previousEpisodeSummary: string;
   empathyIntensity: number;
 
@@ -69,9 +71,11 @@ interface AppState {
   // 액션 - 고급 옵션
   setSelectedKickType: (type: string) => void;
   setSelectedNarrationStyle: (style: string) => void;
+  setProtagonistName: (name: string) => void;
   setSignature: (name: string) => void;
   setReferenceText: (text: string) => void;
   setSerialMode: (on: boolean) => void;
+  setSerialEpisodeCount: (count: number) => void;
   setPreviousEpisodeSummary: (text: string) => void;
   setEmpathyIntensity: (level: number) => void;
 
@@ -130,9 +134,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   // 고급 옵션
   selectedKickType: 'auto',
   selectedNarrationStyle: 'auto',
+  protagonistName: '',
   signature: (() => localStorage.getItem('gonggamtoon_signature') ?? 'Jeremy')(),
   referenceText: '',
   serialMode: false,
+  serialEpisodeCount: 3,
   previousEpisodeSummary: '',
   empathyIntensity: 3,
 
@@ -176,12 +182,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   // 고급 옵션 액션
   setSelectedKickType: (type) => set({ selectedKickType: type }),
   setSelectedNarrationStyle: (style) => set({ selectedNarrationStyle: style }),
+  setProtagonistName: (name) => set({ protagonistName: name }),
   setSignature: (name) => {
     localStorage.setItem('gonggamtoon_signature', name);
     set({ signature: name });
   },
   setReferenceText: (text) => set({ referenceText: text }),
   setSerialMode: (on) => set({ serialMode: on }),
+  setSerialEpisodeCount: (count) => set({ serialEpisodeCount: Math.max(2, Math.min(20, count)) }),
   setPreviousEpisodeSummary: (text) => set({ previousEpisodeSummary: text }),
   setEmpathyIntensity: (level) => set({ empathyIntensity: Math.max(1, Math.min(5, level)) }),
 
@@ -268,8 +276,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     contentMode: '15',
     selectedKickType: 'auto',
     selectedNarrationStyle: 'auto',
+    protagonistName: '',
     referenceText: '',
     serialMode: false,
+    serialEpisodeCount: 3,
     previousEpisodeSummary: '',
     empathyIntensity: 3,
     generatedStories: [],

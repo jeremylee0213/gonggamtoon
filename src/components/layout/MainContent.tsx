@@ -46,16 +46,12 @@ export default function MainContent() {
             <ThemeSelector />
           </section>
 
-          {/* Language + Mode + Panels + Generate: compact row */}
+          {/* Language + Panels + Mode: single compact row */}
           <section className="bg-card border border-border rounded-2xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <div className="flex gap-3 max-sm:flex-col">
-              <div className="flex-1 space-y-2">
-                <LanguageSelector />
-                <ModeSelector />
-              </div>
-              <div className="flex-1 space-y-2">
-                <PanelSelector />
-              </div>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-center">
+              <LanguageSelector />
+              <PanelSelector />
+              <ModeSelector />
             </div>
           </section>
 

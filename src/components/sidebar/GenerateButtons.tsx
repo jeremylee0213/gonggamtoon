@@ -36,8 +36,10 @@ export default function GenerateButtons() {
   const isReadyToGenerate = useAppStore((s) => s.isReadyToGenerate);
   const selectedKickType = useAppStore((s) => s.selectedKickType);
   const selectedNarrationStyle = useAppStore((s) => s.selectedNarrationStyle);
+  const protagonistName = useAppStore((s) => s.protagonistName);
   const referenceText = useAppStore((s) => s.referenceText);
   const serialMode = useAppStore((s) => s.serialMode);
+  const serialEpisodeCount = useAppStore((s) => s.serialEpisodeCount);
   const previousEpisodeSummary = useAppStore((s) => s.previousEpisodeSummary);
   const empathyIntensity = useAppStore((s) => s.empathyIntensity);
   const signature = useAppStore((s) => s.signature);
@@ -93,11 +95,14 @@ export default function GenerateButtons() {
         contentMode,
         selectedKickType,
         selectedNarrationStyle,
+        protagonistName,
         referenceText,
         serialMode,
+        serialEpisodeCount,
         previousEpisodeSummary,
         empathyIntensity,
       });
+      const expectedStoryCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : undefined;
 
       let lastError: Error | null = null;
 
@@ -113,7 +118,7 @@ export default function GenerateButtons() {
           );
 
           setGenerationPhase('스토리 파싱 중...');
-          const stories = parseStoryResponse(response, effectivePanels);
+          const stories = parseStoryResponse(response, effectivePanels, expectedStoryCount);
 
           if (stories.length === 0) {
             throw new Error('스토리를 파싱하지 못했습니다.');
@@ -125,7 +130,12 @@ export default function GenerateButtons() {
           const prompts = buildAllPrompts(stories);
           setGeneratedPrompts(prompts);
 
-          showToast('3개 스토리와 프롬프트가 생성되었어요!', 'success');
+          showToast(
+            serialMode
+              ? `${stories.length}화 연재 스토리와 프롬프트가 생성되었어요!`
+              : `${stories.length}개 스토리와 프롬프트가 생성되었어요!`,
+            'success',
+          );
           return;
         } catch (err) {
           lastError = err instanceof Error ? err : new Error(String(err));
@@ -154,7 +164,7 @@ export default function GenerateButtons() {
       setGenerationPhase('');
       isGeneratingRef.current = false;
     }
-  }, [ready, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, referenceText, serialMode, previousEpisodeSummary, empathyIntensity]);
+  }, [ready, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, protagonistName, referenceText, serialMode, serialEpisodeCount, previousEpisodeSummary, empathyIntensity]);
 
   const handleCancel = useCallback(() => {
     abortCurrentRequest();

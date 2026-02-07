@@ -13,12 +13,16 @@ export default function AdvancedOptions() {
   const setSelectedKickType = useAppStore((s) => s.setSelectedKickType);
   const selectedNarrationStyle = useAppStore((s) => s.selectedNarrationStyle);
   const setSelectedNarrationStyle = useAppStore((s) => s.setSelectedNarrationStyle);
+  const protagonistName = useAppStore((s) => s.protagonistName);
+  const setProtagonistName = useAppStore((s) => s.setProtagonistName);
   const signature = useAppStore((s) => s.signature);
   const setSignature = useAppStore((s) => s.setSignature);
   const referenceText = useAppStore((s) => s.referenceText);
   const setReferenceText = useAppStore((s) => s.setReferenceText);
   const serialMode = useAppStore((s) => s.serialMode);
   const setSerialMode = useAppStore((s) => s.setSerialMode);
+  const serialEpisodeCount = useAppStore((s) => s.serialEpisodeCount);
+  const setSerialEpisodeCount = useAppStore((s) => s.setSerialEpisodeCount);
   const previousEpisodeSummary = useAppStore((s) => s.previousEpisodeSummary);
   const setPreviousEpisodeSummary = useAppStore((s) => s.setPreviousEpisodeSummary);
   const empathyIntensity = useAppStore((s) => s.empathyIntensity);
@@ -67,7 +71,7 @@ export default function AdvancedOptions() {
         <span className="flex items-center gap-2 text-base font-bold text-text">
           <Settings2 className="w-5 h-5 text-accent" />
           고급 옵션
-          {!open && (selectedKickType !== 'auto' || selectedNarrationStyle !== 'auto' || serialMode || empathyIntensity !== 3) && (
+          {!open && (selectedKickType !== 'auto' || selectedNarrationStyle !== 'auto' || serialMode || empathyIntensity !== 3 || protagonistName.trim()) && (
             <span className="text-xs font-normal text-accent bg-accent-light px-2 py-0.5 rounded-full">커스텀</span>
           )}
         </span>
@@ -139,6 +143,18 @@ export default function AdvancedOptions() {
             </div>
           </div>
 
+          {/* #31: Protagonist override */}
+          <div>
+            <label className="text-sm font-bold text-text block mb-2">주인공 이름/설정 (선택)</label>
+            <input
+              type="text"
+              value={protagonistName}
+              onChange={(e) => setProtagonistName(e.target.value)}
+              placeholder="예: 민지(29세, 스타트업 디자이너)"
+              className="w-full px-3 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card"
+            />
+          </div>
+
           {/* #25: Signature */}
           <div>
             <label className="text-sm font-bold text-text block mb-2">서명 (워터마크)</label>
@@ -172,16 +188,37 @@ export default function AdvancedOptions() {
                 onChange={(e) => setSerialMode(e.target.checked)}
                 className="accent-accent w-4 h-4"
               />
-              <span className="text-sm font-bold text-text">연재 모드 (다음 회차 생성)</span>
+              <span className="text-sm font-bold text-text">연재 모드 (여러 화 연속 생성)</span>
             </label>
             {serialMode && (
-              <textarea
-                value={previousEpisodeSummary}
-                onChange={(e) => setPreviousEpisodeSummary(e.target.value)}
-                placeholder="이전 회차 요약을 입력하세요..."
-                rows={2}
-                className="w-full mt-2 px-3 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card resize-none"
-              />
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-text shrink-0">연재 화수</span>
+                  <input
+                    type="number"
+                    min={2}
+                    max={20}
+                    value={serialEpisodeCount}
+                    onChange={(e) => {
+                      const num = parseInt(e.target.value, 10);
+                      if (!isNaN(num)) setSerialEpisodeCount(num);
+                    }}
+                    className="w-20 px-2.5 py-1.5 text-sm text-center border border-border rounded-lg bg-white focus:outline-none focus:border-accent dark:bg-card"
+                    aria-label="연재 화수 입력"
+                  />
+                  <span className="text-sm text-muted">화 (2~20)</span>
+                </div>
+                <p className="text-xs text-muted">
+                  각 화는 기승전결이 끝나도록 작성하고, 다음 화가 이전 화를 이어가도록 한 번에 생성합니다.
+                </p>
+                <textarea
+                  value={previousEpisodeSummary}
+                  onChange={(e) => setPreviousEpisodeSummary(e.target.value)}
+                  placeholder="이미 연재 중이면 이전 화 요약을 입력하세요 (선택)"
+                  rows={2}
+                  className="w-full px-3 py-2 text-sm border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-accent dark:bg-card resize-none"
+                />
+              </div>
             )}
           </div>
 

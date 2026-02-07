@@ -3,6 +3,7 @@ import { DEFAULT_PANELS } from '../../data/panelLayouts';
 
 export default function PanelSelector() {
   const { customPanelCount, setPanels, setCustomPanelCount } = useAppStore();
+  const currentPanels = customPanelCount ?? DEFAULT_PANELS;
 
   const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
@@ -18,20 +19,12 @@ export default function PanelSelector() {
   };
 
   return (
-    <div>
-      <div className="flex items-center gap-2.5 mb-2">
-        <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(0,122,255,0.3)]">
-          3
-        </span>
-        <span className="text-base font-bold text-text">컷 수</span>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span className="text-base text-muted">
-          {customPanelCount
-            ? `${customPanelCount}컷`
-            : `${DEFAULT_PANELS}컷 (기본)`}
-        </span>
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
+        4
+      </span>
+      <span className="text-sm font-bold text-text shrink-0">컷 수</span>
+      <div className="flex items-center gap-1.5 min-w-0">
         <input
           type="number"
           min={4}
@@ -39,9 +32,12 @@ export default function PanelSelector() {
           value={customPanelCount ?? ''}
           onChange={handleCustomChange}
           placeholder={String(DEFAULT_PANELS)}
-          className="w-20 px-3 py-2 text-base text-center border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-primary dark:bg-card"
+          className="w-16 px-2 py-1.5 text-sm text-center border border-border rounded-lg bg-white focus:outline-none focus:border-primary dark:bg-card"
+          aria-label="컷 수 입력"
         />
-        <span className="text-sm text-muted">4~16</span>
+        <span className="text-sm text-text shrink-0">컷</span>
+        <span className="text-xs text-muted shrink-0">(4~16)</span>
+        <span className="text-xs text-muted shrink-0">현재 {currentPanels}</span>
       </div>
     </div>
   );
