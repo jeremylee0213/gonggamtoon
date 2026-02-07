@@ -36,7 +36,7 @@ export default function PromptCards() {
           particleCount: 60,
           spread: 50,
           origin: { y: 0.7 },
-          colors: ['#4CAF50', '#00897B', '#66BB6A', '#FF8F00'],
+          colors: ['#007AFF', '#5856D6', '#34C759', '#FF9500'],
         });
         markCopied();
       }
@@ -114,7 +114,7 @@ export default function PromptCards() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <span className="bg-success text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(102,187,106,0.3)]">
+          <span className="bg-success text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(52,199,89,0.3)]">
             5
           </span>
           <span className="text-lg font-bold text-text">생성된 프롬프트</span>

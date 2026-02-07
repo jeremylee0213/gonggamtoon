@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Search, Check } from 'lucide-react';
+import { Search, Check, Flame } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { themeMetaList, THEME_CATEGORIES } from '../../data/themes';
 import { scrollToSection } from '../../hooks/useAutoScroll';
+
+const POPULAR_THEMES = ['번아웃', 'ADHD', '연애', '미루기', '직장생활', '사회불안'];
 
 export default function ThemeSelector() {
   const { selectedTheme, customThemeInput, setTheme, setCustomThemeInput } = useAppStore();
@@ -32,10 +34,40 @@ export default function ThemeSelector() {
   return (
     <div className="bg-card border border-border rounded-2xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <div className="flex items-center gap-2.5 mb-3">
-        <span className="bg-accent text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(0,137,123,0.3)]">
+        <span className="bg-accent text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(88,86,214,0.3)]">
           2
         </span>
         <span className="text-lg font-bold text-text">공감 주제</span>
+      </div>
+
+      {/* Popular picks */}
+      <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
+        {POPULAR_THEMES.map((key) => {
+          const theme = themeMetaList.find((t) => t.key === key);
+          if (!theme) return null;
+          const isSelected = selectedTheme?.key === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handleSelect(theme)}
+              className={`
+                flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-all border min-w-[60px] shrink-0
+                ${isSelected
+                  ? 'border-accent bg-accent-light shadow-sm'
+                  : 'border-border bg-surface hover:shadow-md hover:-translate-y-0.5'
+                }
+              `}
+            >
+              <span className="text-2xl">{theme.emoji}</span>
+              <span className={`text-xs font-medium ${isSelected ? 'text-accent' : 'text-text'}`}>{theme.name}</span>
+            </button>
+          );
+        })}
+        <div className="flex items-center px-1">
+          <Flame className="w-3.5 h-3.5 text-warning" />
+          <span className="text-xs text-muted ml-0.5">인기</span>
+        </div>
       </div>
 
       <div className="flex gap-1.5 mb-3 flex-wrap">
@@ -94,7 +126,7 @@ export default function ThemeSelector() {
                 px-3 py-1.5 rounded-xl text-sm cursor-pointer transition-all border
                 ${
                   isSelected
-                    ? 'border-accent bg-accent-light text-accent font-semibold shadow-[0_2px_8px_rgba(0,137,123,0.15)] scale-105'
+                    ? 'border-accent bg-accent-light text-accent font-semibold shadow-[0_2px_8px_rgba(88,86,214,0.15)] scale-105'
                     : 'border-border bg-white text-text hover:shadow-md hover:-translate-y-0.5 dark:bg-card'
                 }
               `}

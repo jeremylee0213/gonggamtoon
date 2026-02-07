@@ -1,4 +1,4 @@
-import { Palette, Heart, Hash, Sparkles, MousePointerClick, ClipboardCopy } from 'lucide-react';
+import { Palette, Heart, Hash, Sparkles, MousePointerClick, ClipboardCopy, Check } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { scrollToSection } from '../../hooks/useAutoScroll';
 
@@ -51,12 +51,12 @@ export default function ProgressStepper() {
                 aria-label={step.label}
               >
                 <div className={`
-                  w-9 h-9 rounded-full flex items-center justify-center transition-all
-                  ${done ? 'bg-primary text-white shadow-[0_2px_8px_rgba(76,175,80,0.3)]'
+                  w-9 h-9 rounded-full flex items-center justify-center transition-all relative
+                  ${done ? 'bg-primary text-white shadow-[0_2px_8px_rgba(0,122,255,0.3)]'
                     : active ? 'bg-primary-light text-primary border-2 border-primary'
                     : 'bg-surface text-muted/40 border border-border'}
                 `}>
-                  <Icon className="w-4 h-4" />
+                  {done ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                 </div>
                 <span className={`text-xs font-medium ${done ? 'text-primary' : active ? 'text-text' : 'text-muted/40'}`}>
                   {step.label}
@@ -64,9 +64,13 @@ export default function ProgressStepper() {
               </button>
 
               {i < STEPS.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-1 rounded-full transition-colors ${
-                  completedSteps[i] ? 'bg-primary/40' : 'bg-border/40'
-                }`} />
+                <div className="flex-1 h-0.5 mx-1 rounded-full overflow-hidden bg-border/40">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ease-out ${
+                      completedSteps[i] ? 'bg-primary w-full' : 'w-0'
+                    }`}
+                  />
+                </div>
               )}
             </div>
           );

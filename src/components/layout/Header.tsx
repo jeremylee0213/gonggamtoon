@@ -68,9 +68,9 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-[#1A2E1B]/80 border-b border-border/50 h-16 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)]" role="banner">
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-black/80 border-b border-border/50 h-16 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)]" role="banner">
         <h1 className="text-2xl font-bold tracking-tight">
-          <span className="text-2xl mr-1.5" aria-hidden="true">🌿</span>
+          <span className="text-2xl mr-1.5" aria-hidden="true">🎨</span>
           공감툰 프롬프트 봇
         </h1>
 

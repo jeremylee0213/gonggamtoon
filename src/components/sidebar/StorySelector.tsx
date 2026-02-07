@@ -1,5 +1,5 @@
 import { useState, useCallback, memo } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, LayoutGrid, Table2 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { showToast } from '../common/Toast';
 import { copyToClipboard } from '../../utils/clipboard';
@@ -34,6 +34,7 @@ export default function StorySelector() {
 
   const themeName = getEffectiveTheme();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
 
   const handleSelectStory = useCallback(async (story: import('../../types').GeneratedStory, index: number) => {
     setSelectedStory(story);
@@ -51,7 +52,7 @@ export default function StorySelector() {
           particleCount: 60,
           spread: 50,
           origin: { y: 0.7 },
-          colors: ['#4CAF50', '#00897B', '#66BB6A', '#FF8F00'],
+          colors: ['#007AFF', '#5856D6', '#34C759', '#FF9500'],
         });
         markCopied();
       }
@@ -67,16 +68,73 @@ export default function StorySelector() {
   return (
     <div>
       <div className="flex items-center gap-2.5 mb-4">
-        <span className="bg-warning text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(255,143,0,0.3)]">
+        <span className="bg-warning text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(255,149,0,0.3)]">
           4
         </span>
         <span className="text-lg font-bold text-text">스토리 선택</span>
         {!isGeneratingStories && generatedStories.length > 0 && (
-          <span className="text-sm text-muted ml-1">클릭하면 프롬프트가 자동 복사돼요</span>
+          <>
+            <span className="text-sm text-muted ml-1">클릭하면 프롬프트가 자동 복사돼요</span>
+            <div className="ml-auto flex items-center gap-1 bg-surface rounded-lg p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode('card')}
+                className={`p-1.5 rounded-md cursor-pointer transition-all ${viewMode === 'card' ? 'bg-card text-text shadow-sm' : 'text-muted'}`}
+                aria-label="카드 보기"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`p-1.5 rounded-md cursor-pointer transition-all ${viewMode === 'table' ? 'bg-card text-text shadow-sm' : 'text-muted'}`}
+                aria-label="테이블 보기"
+              >
+                <Table2 className="w-4 h-4" />
+              </button>
+            </div>
+          </>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3" role="radiogroup" aria-label="스토리 선택">
+      {/* Comparison table view */}
+      {viewMode === 'table' && !isGeneratingStories && generatedStories.length > 0 && (
+        <div className="overflow-x-auto mb-3 border border-border rounded-2xl">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-surface text-muted">
+                <th className="px-3 py-2 text-left font-medium">#</th>
+                <th className="px-3 py-2 text-left font-medium">제목</th>
+                <th className="px-3 py-2 text-left font-medium">캐릭터</th>
+                <th className="px-3 py-2 text-left font-medium">반전</th>
+              </tr>
+            </thead>
+            <tbody>
+              {generatedStories.map((story, idx) => {
+                const isSelected = selectedStory?.title === story.title && selectedStory?.character === story.character;
+                return (
+                  <tr
+                    key={idx}
+                    onClick={() => handleSelectStory(story, idx)}
+                    className={`cursor-pointer transition-colors border-t border-border ${
+                      isSelected ? 'bg-primary-light' : 'hover:bg-surface'
+                    }`}
+                  >
+                    <td className="px-3 py-2.5 font-bold text-primary">{idx + 1}</td>
+                    <td className="px-3 py-2.5 font-medium">{story.title}</td>
+                    <td className="px-3 py-2.5">
+                      <span className="bg-char text-white rounded-full px-2 py-0.5 text-xs">{story.character}</span>
+                    </td>
+                    <td className="px-3 py-2.5 text-primary text-xs">{story.kick}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 md:grid-cols-3 gap-3 ${viewMode === 'table' && !isGeneratingStories && generatedStories.length > 0 ? 'hidden' : ''}`} role="radiogroup" aria-label="스토리 선택">
         {isGeneratingStories ? (
           <>
             <ShimmerCard />

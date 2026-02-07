@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Loader2, ChevronUp, X, Copy, Check } from 'lucide-react';
+import { Sparkles, Loader2, ChevronUp, X, Copy, Check, Palette, Heart, Hash } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { scrollToSection } from '../../hooks/useAutoScroll';
 import { showToast } from './Toast';
@@ -10,12 +10,18 @@ const PROMPT_COLORS = [
   { bg: 'bg-warning', label: '스토리 3' },
 ];
 
+const NAV_ITEMS = [
+  { id: 'section-style', icon: Palette, label: '스타일' },
+  { id: 'section-theme', icon: Heart, label: '주제' },
+  { id: 'section-generate', icon: Hash, label: '컷수' },
+];
+
 export default function MobileStickyButton() {
-  const isReadyToGenerate = useAppStore((s) => s.isReadyToGenerate);
   const isGeneratingStories = useAppStore((s) => s.isGeneratingStories);
   const generatedPrompts = useAppStore((s) => s.generatedPrompts);
   const generatedStories = useAppStore((s) => s.generatedStories);
-  const ready = isReadyToGenerate();
+  const selectedStyle = useAppStore((s) => s.selectedStyle);
+  const selectedTheme = useAppStore((s) => s.selectedTheme);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
@@ -31,8 +37,6 @@ export default function MobileStickyButton() {
       showToast('복사 실패', 'error');
     }
   };
-
-  if (!ready && !isGeneratingStories && !hasPrompts) return null;
 
   return (
     <>
@@ -94,35 +98,61 @@ export default function MobileStickyButton() {
         </div>
       )}
 
-      {/* Sticky bottom buttons */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 lg:hidden flex items-center gap-2">
-        {hasPrompts && (
+      {/* Mobile bottom navigation bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-card/95 backdrop-blur-lg border-t border-border safe-area-pb">
+        <div className="flex items-center justify-around px-2 py-2">
+          {/* Quick nav buttons */}
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              (item.id === 'section-style' && !!selectedStyle) ||
+              (item.id === 'section-theme' && !!selectedTheme);
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollToSection(item.id)}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl cursor-pointer transition-all ${
+                  isActive ? 'text-primary' : 'text-muted'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+
+          {/* Prompt sheet button */}
+          {hasPrompts && (
+            <button
+              type="button"
+              onClick={() => setSheetOpen(true)}
+              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl cursor-pointer text-accent transition-all"
+            >
+              <ChevronUp className="w-5 h-5" />
+              <span className="text-[10px] font-medium">프롬프트</span>
+            </button>
+          )}
+
+          {/* Generate button */}
           <button
             type="button"
-            onClick={() => setSheetOpen(true)}
-            className="flex items-center gap-2 px-5 py-3 bg-card text-text border border-border rounded-full font-bold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.15)] transition-all cursor-pointer"
+            onClick={() => scrollToSection('btn-generate-stories')}
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-full font-bold text-sm shadow-[0_2px_12px_rgba(0,122,255,0.4)] cursor-pointer transition-all"
           >
-            <ChevronUp className="w-4 h-4" />
-            프롬프트 보기
+            {isGeneratingStories ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                생성 중
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                생성
+              </>
+            )}
           </button>
-        )}
-        <button
-          type="button"
-          onClick={() => scrollToSection('btn-generate-stories')}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-[0_4px_20px_rgba(76,175,80,0.4)] hover:shadow-[0_6px_24px_rgba(76,175,80,0.5)] transition-all cursor-pointer animate-[fadeIn_0.3s_ease-in-out]"
-        >
-          {isGeneratingStories ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              생성 중...
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-5 h-5" />
-              스토리 생성
-            </>
-          )}
-        </button>
+        </div>
       </div>
     </>
   );

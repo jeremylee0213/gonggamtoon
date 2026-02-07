@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Search, Check } from 'lucide-react';
+import { Search, Check, Flame } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { styleData, STYLE_CATEGORIES } from '../../data/styles';
 import { scrollToSection } from '../../hooks/useAutoScroll';
+
+const POPULAR_STYLES = ['짱구', '포켓몬', '지브리', '원피스', '귀멸의 칼날', '스파이패밀리'];
 
 export default function StyleSelector() {
   const { selectedStyle, customStyleInput, setStyle, setCustomStyleInput } = useAppStore();
@@ -31,10 +33,40 @@ export default function StyleSelector() {
   return (
     <div className="bg-card border border-border rounded-2xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <div className="flex items-center gap-2.5 mb-3">
-        <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(76,175,80,0.3)]">
+        <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(0,122,255,0.3)]">
           1
         </span>
         <span className="text-lg font-bold text-text">만화 스타일</span>
+      </div>
+
+      {/* Popular picks */}
+      <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
+        {POPULAR_STYLES.map((name) => {
+          const style = styleData.find((s) => s.name === name);
+          if (!style) return null;
+          const isSelected = selectedStyle?.name === name;
+          return (
+            <button
+              key={name}
+              type="button"
+              onClick={() => handleSelect(style)}
+              className={`
+                flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-all border min-w-[60px] shrink-0
+                ${isSelected
+                  ? 'border-primary bg-primary-light shadow-sm'
+                  : 'border-border bg-surface hover:shadow-md hover:-translate-y-0.5'
+                }
+              `}
+            >
+              <span className="text-2xl">{style.emoji}</span>
+              <span className={`text-xs font-medium ${isSelected ? 'text-primary-dark' : 'text-text'}`}>{style.name}</span>
+            </button>
+          );
+        })}
+        <div className="flex items-center px-1">
+          <Flame className="w-3.5 h-3.5 text-warning" />
+          <span className="text-xs text-muted ml-0.5">인기</span>
+        </div>
       </div>
 
       <div className="flex gap-1.5 mb-3 flex-wrap">
@@ -93,7 +125,7 @@ export default function StyleSelector() {
                 px-3 py-1.5 rounded-xl text-sm cursor-pointer transition-all border
                 ${
                   isSelected
-                    ? 'border-primary bg-primary-light text-primary-dark font-semibold shadow-[0_2px_8px_rgba(76,175,80,0.15)] scale-105'
+                    ? 'border-primary bg-primary-light text-primary-dark font-semibold shadow-[0_2px_8px_rgba(0,122,255,0.15)] scale-105'
                     : 'border-border bg-white text-text hover:shadow-md hover:-translate-y-0.5 dark:bg-card'
                 }
               `}

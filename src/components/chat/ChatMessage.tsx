@@ -46,7 +46,7 @@ export default function ChatMessage({ message, isFirstPrompt = false }: ChatMess
           <div className={`rounded-2xl px-5 py-3 text-base leading-relaxed ${
             isBot
               ? 'bg-card border border-border shadow-sm'
-              : 'bg-primary text-white shadow-[0_2px_8px_rgba(76,175,80,0.2)]'
+              : 'bg-primary text-white shadow-[0_2px_8px_rgba(0,122,255,0.2)]'
           }`}>
             {message.content}
           </div>
