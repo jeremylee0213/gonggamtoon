@@ -15,7 +15,7 @@ export default function ModeSelector() {
   return (
     <div className="flex items-center gap-2 min-w-0">
       <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
-        5
+        6
       </span>
       <span className="text-sm font-bold text-text shrink-0">수위</span>
       <select

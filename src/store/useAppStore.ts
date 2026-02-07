@@ -16,6 +16,7 @@ interface AppState {
   selectedPanels: number;
   customPanelCount: number | null;
   selectedTheme: ThemeMeta | null;
+  selectedThemes: ThemeMeta[];
   customThemeInput: string;
   dialogLanguage: DialogLanguage;
   customLanguageInput: string;
@@ -63,6 +64,9 @@ interface AppState {
   setPanels: (panels: number) => void;
   setCustomPanelCount: (count: number | null) => void;
   setTheme: (theme: ThemeMeta | null) => void;
+  addThemes: (themes: ThemeMeta[]) => void;
+  removeThemeAt: (index: number) => void;
+  clearThemes: () => void;
   setCustomThemeInput: (text: string) => void;
   setDialogLanguage: (lang: DialogLanguage) => void;
   setCustomLanguageInput: (text: string) => void;
@@ -126,6 +130,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectedPanels: DEFAULT_PANELS,
   customPanelCount: null,
   selectedTheme: null,
+  selectedThemes: [],
   customThemeInput: '',
   dialogLanguage: 'ko',
   customLanguageInput: '',
@@ -173,8 +178,55 @@ export const useAppStore = create<AppState>((set, get) => ({
   setCustomStyleInput: (text) => set({ customStyleInput: text, selectedStyle: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
   setPanels: (panels) => set({ selectedPanels: panels, customPanelCount: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
   setCustomPanelCount: (count) => set({ customPanelCount: count, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
-  setTheme: (theme) => set({ selectedTheme: theme, customThemeInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
-  setCustomThemeInput: (text) => set({ customThemeInput: text, selectedTheme: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
+  setTheme: (theme) => set((state) => {
+    if (!theme) {
+      return { selectedTheme: null, selectedThemes: [], customThemeInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} };
+    }
+    const nextThemes = [...state.selectedThemes, theme];
+    return {
+      selectedTheme: theme,
+      selectedThemes: nextThemes,
+      customThemeInput: '',
+      generatedStories: [],
+      generatedPrompts: [],
+      selectedStory: null,
+      editedDialogs: {},
+    };
+  }),
+  addThemes: (themes) => set((state) => {
+    if (themes.length === 0) return {};
+    const nextThemes = [...state.selectedThemes, ...themes];
+    return {
+      selectedTheme: nextThemes[nextThemes.length - 1] ?? null,
+      selectedThemes: nextThemes,
+      customThemeInput: '',
+      generatedStories: [],
+      generatedPrompts: [],
+      selectedStory: null,
+      editedDialogs: {},
+    };
+  }),
+  removeThemeAt: (index) => set((state) => {
+    const nextThemes = state.selectedThemes.filter((_, i) => i !== index);
+    return {
+      selectedTheme: nextThemes[nextThemes.length - 1] ?? null,
+      selectedThemes: nextThemes,
+      generatedStories: [],
+      generatedPrompts: [],
+      selectedStory: null,
+      editedDialogs: {},
+    };
+  }),
+  clearThemes: () => set({
+    selectedTheme: null,
+    selectedThemes: [],
+    customThemeInput: '',
+    generatedStories: [],
+    generatedPrompts: [],
+    selectedStory: null,
+    editedDialogs: {},
+  }),
+  setCustomThemeInput: (text) => set({ customThemeInput: text, selectedTheme: null, selectedThemes: [], generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
   setDialogLanguage: (lang) => set({ dialogLanguage: lang, customLanguageInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null }),
   setCustomLanguageInput: (text) => set({ customLanguageInput: text, dialogLanguage: 'custom', generatedStories: [], generatedPrompts: [], selectedStory: null }),
   setContentMode: (mode) => set({ contentMode: mode, generatedStories: [], generatedPrompts: [], selectedStory: null }),
@@ -270,6 +322,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     selectedPanels: DEFAULT_PANELS,
     customPanelCount: null,
     selectedTheme: null,
+    selectedThemes: [],
     customThemeInput: '',
     dialogLanguage: 'ko',
     customLanguageInput: '',
@@ -298,12 +351,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   getEffectiveTheme: () => {
     const s = get();
+    if (s.selectedThemes.length > 0) {
+      return s.selectedThemes.map((t) => t.name).join(', ');
+    }
     return s.selectedTheme?.name ?? s.customThemeInput;
   },
   isReadyToGenerate: () => {
     const s = get();
     const hasStyle = !!(s.selectedStyle || s.customStyleInput.trim());
-    const hasTheme = !!(s.selectedTheme || s.customThemeInput.trim());
+    const hasTheme = s.selectedThemes.length > 0 || !!(s.selectedTheme || s.customThemeInput.trim());
     const hasApiKey = !!s.apiKeys[s.activeProvider];
     return hasStyle && hasTheme && hasApiKey;
   },

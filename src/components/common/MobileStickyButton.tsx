@@ -21,7 +21,7 @@ export default function MobileStickyButton() {
   const generatedPrompts = useAppStore((s) => s.generatedPrompts);
   const generatedStories = useAppStore((s) => s.generatedStories);
   const selectedStyle = useAppStore((s) => s.selectedStyle);
-  const selectedTheme = useAppStore((s) => s.selectedTheme);
+  const selectedThemes = useAppStore((s) => s.selectedThemes);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
@@ -106,7 +106,7 @@ export default function MobileStickyButton() {
             const Icon = item.icon;
             const isActive =
               (item.id === 'section-style' && !!selectedStyle) ||
-              (item.id === 'section-theme' && !!selectedTheme);
+              (item.id === 'section-theme' && selectedThemes.length > 0);
             return (
               <button
                 key={item.id}

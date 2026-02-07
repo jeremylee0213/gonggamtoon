@@ -14,14 +14,14 @@ const STEPS = [
 export default function ProgressStepper() {
   const selectedStyle = useAppStore((s) => s.selectedStyle);
   const customStyleInput = useAppStore((s) => s.customStyleInput);
-  const selectedTheme = useAppStore((s) => s.selectedTheme);
+  const selectedThemes = useAppStore((s) => s.selectedThemes);
   const customThemeInput = useAppStore((s) => s.customThemeInput);
   const generatedStories = useAppStore((s) => s.generatedStories);
   const selectedStory = useAppStore((s) => s.selectedStory);
   const generatedPrompts = useAppStore((s) => s.generatedPrompts);
 
   const hasStyle = !!(selectedStyle || customStyleInput.trim());
-  const hasTheme = !!(selectedTheme || customThemeInput.trim());
+  const hasTheme = selectedThemes.length > 0 || !!customThemeInput.trim();
   const hasStories = generatedStories.length > 0;
   const hasSelectedStory = !!selectedStory;
   const hasPrompt = generatedPrompts.length > 0;

@@ -41,6 +41,7 @@ const EMPATHY_LEVELS: Record<number, string> = {
 interface StoryGenConfig {
   style: Style | null;
   customStyleInput: string;
+  themes?: ThemeMeta[];
   theme: ThemeMeta | null;
   customThemeInput: string;
   panelCount: number;
@@ -60,6 +61,7 @@ interface StoryGenConfig {
 export function buildStoryPrompt(config: StoryGenConfig): string {
   const {
     style, customStyleInput, theme, customThemeInput, panelCount,
+    themes = [],
     dialogLanguage, customLanguageInput, contentMode,
     selectedKickType = 'auto', selectedNarrationStyle = 'auto',
     protagonistName = '',
@@ -70,9 +72,21 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
 
   const styleName = style ? `${style.name} (${style.en})` : customStyleInput;
   const character = protagonistName.trim() || (style ? style.chars[Math.floor(Math.random() * style.chars.length)] : '주인공');
-  const themeName = theme ? theme.name : customThemeInput;
-  const themeDesc = theme ? theme.description : '';
-  const themeCategory = theme?.category ?? '';
+  const resolvedThemes = themes.length > 0 ? themes : (theme ? [theme] : []);
+  const themeName = resolvedThemes.length > 0
+    ? resolvedThemes.map((t) => t.name).join(', ')
+    : customThemeInput;
+  const themeDesc = resolvedThemes.length > 0
+    ? resolvedThemes.map((t) => `${t.name}: ${t.description}`).join(' | ')
+    : '';
+  const themeCategory = resolvedThemes.length === 1 ? (resolvedThemes[0].category ?? '') : '';
+  const themeFrequency = resolvedThemes.reduce<Record<string, number>>((acc, item) => {
+    acc[item.name] = (acc[item.name] ?? 0) + 1;
+    return acc;
+  }, {});
+  const themePriorityLine = Object.entries(themeFrequency)
+    .map(([name, count]) => `${name} x${count}`)
+    .join(', ');
   const langName = dialogLanguage === 'custom' ? customLanguageInput : LANGUAGE_NAMES[dialogLanguage];
   const generationCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : STORY_GENERATION_COUNT;
 
@@ -113,6 +127,11 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
 ${MODE_INSTRUCTIONS[contentMode]}
 
 ${EMPATHY_GUIDE}`;
+
+  if (resolvedThemes.length > 0) {
+    prompt += `\n• 다중 주제 우선순위: ${themePriorityLine || themeName}`;
+    prompt += '\n• 주제를 화/스토리별로 순환하거나 혼합하되, 선택된 주제를 모두 반영하세요.';
+  }
 
   // #27: Reference text
   if (referenceText.trim()) {

@@ -34,7 +34,7 @@ export default function StyleSelector() {
     <div className="bg-card border border-border rounded-2xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <div className="flex items-center gap-2.5 mb-3">
         <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(0,122,255,0.3)]">
-          1
+          2
         </span>
         <span className="text-lg font-bold text-text">만화 스타일</span>
       </div>

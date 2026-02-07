@@ -17,6 +17,7 @@ export default function GenerateButtons() {
   const selectedPanels = useAppStore((s) => s.selectedPanels);
   const customPanelCount = useAppStore((s) => s.customPanelCount);
   const selectedTheme = useAppStore((s) => s.selectedTheme);
+  const selectedThemes = useAppStore((s) => s.selectedThemes);
   const customThemeInput = useAppStore((s) => s.customThemeInput);
   const isGeneratingStories = useAppStore((s) => s.isGeneratingStories);
   const regenerateRequested = useAppStore((s) => s.regenerateRequested);
@@ -56,7 +57,9 @@ export default function GenerateButtons() {
       chars: ['주인공'],
     };
     const layout = getLayoutForPanels(effectivePanels);
-    const themeName = selectedTheme?.name ?? customThemeInput;
+    const themeName = selectedThemes.length > 0
+      ? selectedThemes.map((t) => t.name).join(', ')
+      : (selectedTheme?.name ?? customThemeInput);
 
     return stories.map((story) =>
       buildPrompt({
@@ -72,7 +75,7 @@ export default function GenerateButtons() {
         signature,
       }),
     );
-  }, [selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, contentMode, signature]);
+  }, [selectedStyle, customStyleInput, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, contentMode, signature]);
 
   const handleGenerate = useCallback(async () => {
     if (!ready || isGeneratingRef.current) return;
@@ -87,6 +90,7 @@ export default function GenerateButtons() {
       const prompt = buildStoryPrompt({
         style: selectedStyle,
         customStyleInput,
+        themes: selectedThemes,
         theme: selectedTheme,
         customThemeInput,
         panelCount: effectivePanels,
@@ -164,7 +168,7 @@ export default function GenerateButtons() {
       setGenerationPhase('');
       isGeneratingRef.current = false;
     }
-  }, [ready, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, protagonistName, referenceText, serialMode, serialEpisodeCount, previousEpisodeSummary, empathyIntensity]);
+  }, [ready, selectedStyle, customStyleInput, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, protagonistName, referenceText, serialMode, serialEpisodeCount, previousEpisodeSummary, empathyIntensity]);
 
   const handleCancel = useCallback(() => {
     abortCurrentRequest();

@@ -19,7 +19,7 @@ export default function LanguageSelector() {
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
-          3
+          4
         </span>
         <span className="text-sm font-bold text-text shrink-0">대사 언어</span>
         <select

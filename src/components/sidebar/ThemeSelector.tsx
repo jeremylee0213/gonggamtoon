@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { Search, Check, Flame } from 'lucide-react';
+import { Search, Check, Flame, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { themeMetaList, THEME_CATEGORIES } from '../../data/themes';
-import { scrollToSection } from '../../hooks/useAutoScroll';
 
 const POPULAR_THEMES = ['번아웃', 'ADHD', '연애', '미루기', '직장생활', '사회불안'];
 
 export default function ThemeSelector() {
-  const { selectedTheme, customThemeInput, setTheme, setCustomThemeInput } = useAppStore();
+  const selectedThemes = useAppStore((s) => s.selectedThemes);
+  const customThemeInput = useAppStore((s) => s.customThemeInput);
+  const setTheme = useAppStore((s) => s.setTheme);
+  const addThemes = useAppStore((s) => s.addThemes);
+  const removeThemeAt = useAppStore((s) => s.removeThemeAt);
+  const clearThemes = useAppStore((s) => s.clearThemes);
+  const setCustomThemeInput = useAppStore((s) => s.setCustomThemeInput);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -28,14 +33,19 @@ export default function ThemeSelector() {
 
   const handleSelect = (theme: typeof themeMetaList[0]) => {
     setTheme(theme);
-    scrollToSection('section-generate');
   };
+
+  const handleSelectAll = () => {
+    addThemes(themeMetaList);
+  };
+
+  const getSelectedCount = (key: string) => selectedThemes.filter((t) => t.key === key).length;
 
   return (
     <div className="bg-card border border-border rounded-2xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <div className="flex items-center gap-2.5 mb-3">
         <span className="bg-accent text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(88,86,214,0.3)]">
-          2
+          3
         </span>
         <span className="text-lg font-bold text-text">공감 주제</span>
       </div>
@@ -45,22 +55,28 @@ export default function ThemeSelector() {
         {POPULAR_THEMES.map((key) => {
           const theme = themeMetaList.find((t) => t.key === key);
           if (!theme) return null;
-          const isSelected = selectedTheme?.key === key;
+          const selectedCount = getSelectedCount(key);
           return (
             <button
               key={key}
               type="button"
               onClick={() => handleSelect(theme)}
               className={`
-                flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-all border min-w-[60px] shrink-0
-                ${isSelected
+                relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-all border min-w-[60px] shrink-0
+                ${selectedCount > 0
                   ? 'border-accent bg-accent-light shadow-sm'
                   : 'border-border bg-surface hover:shadow-md hover:-translate-y-0.5'
                 }
               `}
+              title={`${theme.name} 추가`}
             >
+              {selectedCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold">
+                  x{selectedCount}
+                </span>
+              )}
               <span className="text-2xl">{theme.emoji}</span>
-              <span className={`text-xs font-medium ${isSelected ? 'text-accent' : 'text-text'}`}>{theme.name}</span>
+              <span className={`text-xs font-medium ${selectedCount > 0 ? 'text-accent' : 'text-text'}`}>{theme.name}</span>
             </button>
           );
         })}
@@ -98,6 +114,25 @@ export default function ThemeSelector() {
         ))}
       </div>
 
+      <div className="flex items-center gap-2 mb-3">
+        <button
+          type="button"
+          onClick={handleSelectAll}
+          className="px-3 py-1.5 rounded-lg text-sm font-medium border border-accent/40 text-accent hover:bg-accent-light transition-colors cursor-pointer"
+        >
+          모두 선택
+        </button>
+        <button
+          type="button"
+          onClick={clearThemes}
+          disabled={selectedThemes.length === 0}
+          className="px-3 py-1.5 rounded-lg text-sm font-medium border border-border text-muted hover:bg-surface transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          전체 해제
+        </button>
+        <span className="text-xs text-muted ml-auto">선택 {selectedThemes.length}개</span>
+      </div>
+
       <div className="relative mb-3">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
         <input
@@ -112,11 +147,11 @@ export default function ThemeSelector() {
 
       <div
         className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1"
-        role="radiogroup"
-        aria-label="공감 주제 선택"
+        role="group"
+        aria-label="공감 주제 다중 선택"
       >
         {filtered.map((theme) => {
-          const isSelected = selectedTheme?.key === theme.key;
+          const selectedCount = getSelectedCount(theme.key);
           return (
             <button
               key={theme.key}
@@ -125,17 +160,21 @@ export default function ThemeSelector() {
               className={`
                 px-3 py-1.5 rounded-xl text-sm cursor-pointer transition-all border
                 ${
-                  isSelected
+                  selectedCount > 0
                     ? 'border-accent bg-accent-light text-accent font-semibold shadow-[0_2px_8px_rgba(88,86,214,0.15)] scale-105'
                     : 'border-border bg-white text-text hover:shadow-md hover:-translate-y-0.5 dark:bg-card'
                 }
               `}
-              role="radio"
-              aria-checked={isSelected}
+              aria-label={`${theme.name} 추가`}
               title={theme.description}
             >
-              {isSelected && <Check className="w-3.5 h-3.5 inline mr-1" />}
+              {selectedCount > 0 && <Check className="w-3.5 h-3.5 inline mr-1" />}
               {theme.emoji} {theme.name}
+              {selectedCount > 0 && (
+                <span className="ml-1.5 text-[10px] align-middle px-1.5 py-0.5 rounded-full bg-accent text-white">
+                  x{selectedCount}
+                </span>
+              )}
             </button>
           );
         })}
@@ -143,6 +182,30 @@ export default function ThemeSelector() {
           <span className="text-sm text-muted py-2">검색 결과가 없습니다</span>
         )}
       </div>
+
+      {selectedThemes.length > 0 && (
+        <div className="mt-3 p-2 rounded-xl border border-border bg-surface/60">
+          <div className="text-xs text-muted mb-1">선택 순서 (중복 허용)</div>
+          <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+            {selectedThemes.map((theme, idx) => (
+              <span
+                key={`${theme.key}-${idx}`}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs bg-white border border-border dark:bg-card"
+              >
+                {idx + 1}. {theme.emoji} {theme.name}
+                <button
+                  type="button"
+                  onClick={() => removeThemeAt(idx)}
+                  className="text-muted hover:text-text cursor-pointer"
+                  aria-label={`선택된 주제 ${idx + 1} 제거`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-3">
         <input

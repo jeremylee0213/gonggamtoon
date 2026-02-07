@@ -4,7 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 export default function SettingsSummaryBar() {
   const selectedStyle = useAppStore((s) => s.selectedStyle);
   const customStyleInput = useAppStore((s) => s.customStyleInput);
-  const selectedTheme = useAppStore((s) => s.selectedTheme);
+  const selectedThemes = useAppStore((s) => s.selectedThemes);
   const customThemeInput = useAppStore((s) => s.customThemeInput);
   const selectedPanels = useAppStore((s) => s.selectedPanels);
   const customPanelCount = useAppStore((s) => s.customPanelCount);
@@ -12,7 +12,11 @@ export default function SettingsSummaryBar() {
   const contentMode = useAppStore((s) => s.contentMode);
 
   const styleName = selectedStyle?.name ?? customStyleInput;
-  const themeName = selectedTheme?.name ?? customThemeInput;
+  const themeNames = selectedThemes.map((t) => t.name);
+  const themeName = themeNames.length > 0
+    ? (themeNames.length > 2 ? `${themeNames.slice(0, 2).join(', ')} 외 ${themeNames.length - 2}` : themeNames.join(', '))
+    : customThemeInput;
+  const themeEmoji = selectedThemes[0]?.emoji ?? '💡';
   const panels = customPanelCount ?? selectedPanels;
 
   if (!styleName && !themeName) return null;
@@ -22,7 +26,7 @@ export default function SettingsSummaryBar() {
 
   const chips = [
     styleName && `${selectedStyle?.emoji ?? '🎨'} ${styleName}`,
-    themeName && `${selectedTheme?.emoji ?? '💡'} ${themeName}`,
+    themeName && `${themeEmoji} ${themeName}`,
     `${panels}컷`,
     langLabels[dialogLanguage],
     modeLabels[contentMode],

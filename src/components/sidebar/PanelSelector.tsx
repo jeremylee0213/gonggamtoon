@@ -21,7 +21,7 @@ export default function PanelSelector() {
   return (
     <div className="flex items-center gap-2 min-w-0">
       <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
-        4
+        5
       </span>
       <span className="text-sm font-bold text-text shrink-0">컷 수</span>
       <div className="flex items-center gap-1.5 min-w-0">
