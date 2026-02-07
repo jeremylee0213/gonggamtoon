@@ -12,6 +12,7 @@ interface StoryCardProps {
   onSelect: () => void;
   themeName: string;
   copied: boolean;
+  episodeLabel?: string;
 }
 
 const CARD_COLORS = [
@@ -20,7 +21,7 @@ const CARD_COLORS = [
   { border: 'border-warning', bg: 'bg-warning', light: 'bg-[#FFF8EC]' },
 ];
 
-export default memo(function StoryCard({ story, index, selected, onSelect, themeName, copied }: StoryCardProps) {
+export default memo(function StoryCard({ story, index, selected, onSelect, themeName, copied, episodeLabel }: StoryCardProps) {
   const color = CARD_COLORS[index % CARD_COLORS.length];
   const favorites = useAppStore((s) => s.favorites);
   const addFavorite = useAppStore((s) => s.addFavorite);
@@ -86,7 +87,14 @@ export default memo(function StoryCard({ story, index, selected, onSelect, theme
         </div>
       </div>
 
-      <div className="font-bold text-base mb-1">{story.title}</div>
+      <div className="font-bold text-base mb-1 flex items-center gap-2">
+        <span>{story.title}</span>
+        {episodeLabel && (
+          <span className="text-xs font-semibold text-primary bg-primary-light px-2 py-0.5 rounded-full">
+            {episodeLabel}
+          </span>
+        )}
+      </div>
       <p className="text-sm text-primary font-medium">{story.kick}</p>
 
       {story.dialog.length >= 2 && (

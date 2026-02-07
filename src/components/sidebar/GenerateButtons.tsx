@@ -42,7 +42,6 @@ export default function GenerateButtons() {
   const serialMode = useAppStore((s) => s.serialMode);
   const serialEpisodeCount = useAppStore((s) => s.serialEpisodeCount);
   const previousEpisodeSummary = useAppStore((s) => s.previousEpisodeSummary);
-  const empathyIntensity = useAppStore((s) => s.empathyIntensity);
   const signature = useAppStore((s) => s.signature);
 
   const ready = isReadyToGenerate();
@@ -104,7 +103,6 @@ export default function GenerateButtons() {
         serialMode,
         serialEpisodeCount,
         previousEpisodeSummary,
-        empathyIntensity,
       });
       const expectedStoryCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : undefined;
 
@@ -168,7 +166,7 @@ export default function GenerateButtons() {
       setGenerationPhase('');
       isGeneratingRef.current = false;
     }
-  }, [ready, selectedStyle, customStyleInput, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, protagonistName, referenceText, serialMode, serialEpisodeCount, previousEpisodeSummary, empathyIntensity]);
+  }, [ready, selectedStyle, customStyleInput, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, protagonistName, referenceText, serialMode, serialEpisodeCount, previousEpisodeSummary]);
 
   const handleCancel = useCallback(() => {
     abortCurrentRequest();

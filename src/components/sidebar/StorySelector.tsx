@@ -31,6 +31,7 @@ export default function StorySelector() {
   const requestRegenerate = useAppStore((s) => s.requestRegenerate);
   const hasEverCopied = useAppStore((s) => s.hasEverCopied);
   const markCopied = useAppStore((s) => s.markCopied);
+  const serialMode = useAppStore((s) => s.serialMode);
 
   const themeName = getEffectiveTheme();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -121,7 +122,12 @@ export default function StorySelector() {
                     }`}
                   >
                     <td className="px-3 py-2.5 font-bold text-primary">{idx + 1}</td>
-                    <td className="px-3 py-2.5 font-medium">{story.title}</td>
+                    <td className="px-3 py-2.5 font-medium">
+                      <span>{story.title}</span>
+                      {serialMode && (
+                        <span className="ml-1.5 text-xs text-primary">{story.episode ?? idx + 1}화</span>
+                      )}
+                    </td>
                     <td className="px-3 py-2.5">
                       <span className="bg-char text-white rounded-full px-2 py-0.5 text-xs">{story.character}</span>
                     </td>
@@ -155,6 +161,7 @@ export default function StorySelector() {
                 onSelect={() => handleSelectStory(story, idx)}
                 themeName={themeName}
                 copied={copiedIndex === idx}
+                episodeLabel={serialMode ? `${story.episode ?? idx + 1}화` : undefined}
               />
             </div>
           ))

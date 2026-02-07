@@ -29,15 +29,6 @@ const PHASE_RATIOS: Record<string, [number, number, number, number]> = {
 };
 const DEFAULT_RATIOS: [number, number, number, number] = [0.15, 0.35, 0.30, 0.20];
 
-/** #30: Empathy intensity descriptions */
-const EMPATHY_LEVELS: Record<number, string> = {
-  1: '가벼운 미소 수준 — 살짝 공감되는 정도, 부담 없이 가볍게',
-  2: '고개 끄덕임 — "아 그런 적 있지" 정도의 공감',
-  3: '무릎 탁 — "이거 나잖아!" 하는 중간 수준의 공감 (기본)',
-  4: '소리 지름 — "아 진짜 이거 완전 나!!" 수준의 강한 공감',
-  5: '극한 공감 — "이거 내 얘기 아니야?! 누가 몰카 찍었어?!" 수준, 초구체적 디테일',
-};
-
 interface StoryGenConfig {
   style: Style | null;
   customStyleInput: string;
@@ -55,7 +46,6 @@ interface StoryGenConfig {
   serialMode?: boolean;
   serialEpisodeCount?: number;
   previousEpisodeSummary?: string;
-  empathyIntensity?: number;
 }
 
 export function buildStoryPrompt(config: StoryGenConfig): string {
@@ -67,11 +57,11 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     protagonistName = '',
     referenceText = '', serialMode = false, previousEpisodeSummary = '',
     serialEpisodeCount = STORY_GENERATION_COUNT,
-    empathyIntensity = 3,
   } = config;
 
   const styleName = style ? `${style.name} (${style.en})` : customStyleInput;
-  const character = protagonistName.trim() || (style ? style.chars[Math.floor(Math.random() * style.chars.length)] : '주인공');
+  const characterSeed = protagonistName.trim();
+  const styleCharacterPool = style?.chars?.length ? style.chars.join(', ') : '직장인, 대학생, 프리랜서, 취준생';
   const resolvedThemes = themes.length > 0 ? themes : (theme ? [theme] : []);
   const themeName = resolvedThemes.length > 0
     ? resolvedThemes.map((t) => t.name).join(', ')
@@ -89,6 +79,10 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     .join(', ');
   const langName = dialogLanguage === 'custom' ? customLanguageInput : LANGUAGE_NAMES[dialogLanguage];
   const generationCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : STORY_GENERATION_COUNT;
+  const themeAssignmentGuide = resolvedThemes.length > 0
+    ? Array.from({ length: generationCount }, (_, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`} 중심 주제: ${resolvedThemes[i % resolvedThemes.length].name}`)
+        .join('\n')
+    : '';
 
   // #22: Theme-specific ratios
   const ratios = PHASE_RATIOS[themeCategory] ?? DEFAULT_RATIOS;
@@ -109,8 +103,6 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     ? `\n• 내레이션 스타일: "${narrationOption.prompt}"`
     : '';
 
-  // #30: Empathy intensity
-  const empathyLevel = EMPATHY_LEVELS[empathyIntensity] ?? EMPATHY_LEVELS[3];
   const toneGuide = Array.from({ length: generationCount }, (_, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: ${TONE_PRESETS[i % TONE_PRESETS.length]}`).join('\n');
   const kickGuide = Array.from({ length: generationCount }, (_, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: ${KICK_TYPES[i % KICK_TYPES.length]}`).join('\n');
 
@@ -119,11 +111,12 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
 
 === 조건 ===
 • 만화 스타일: ${styleName}
-• 메인 캐릭터: ${character}
+• 주인공 기본 모티프: ${characterSeed || '자동 생성'}${characterSeed ? ' (이 모티프를 참고하되 각 화에서 서로 다른 인물로 변주)' : ''}
+• 스타일 추천 주인공 풀: ${styleCharacterPool}
 • 공감 주제: ${themeName}${themeDesc ? ` — ${themeDesc}` : ''}
 • 컷 수: ${panelCount}컷 (각 컷에 대사 1개씩)
 • 대사 언어: ${langName} — 모든 dialog, title, desc, kick, narration, summary를 ${langName}로 작성
-• 공감 강도: ${empathyIntensity}/5 — ${empathyLevel}${kickInstruction}${narrationInstruction}
+• 공감 강도: 5/5 — 극한 공감 모드 고정${kickInstruction}${narrationInstruction}
 ${MODE_INSTRUCTIONS[contentMode]}
 
 ${EMPATHY_GUIDE}`;
@@ -131,7 +124,9 @@ ${EMPATHY_GUIDE}`;
   if (resolvedThemes.length > 0) {
     prompt += `\n• 다중 주제 우선순위: ${themePriorityLine || themeName}`;
     prompt += '\n• 주제를 화/스토리별로 순환하거나 혼합하되, 선택된 주제를 모두 반영하세요.';
+    prompt += `\n• ${serialMode ? '화' : '스토리'}별 주제 배정:\n${themeAssignmentGuide}`;
   }
+  prompt += `\n• 주인공 규칙: 각 ${serialMode ? '화' : '스토리'}의 character는 서로 다른 인물이어야 하며, 이름/직업/말투/상황을 중복하지 마세요.`;
 
   // #27: Reference text
   if (referenceText.trim()) {
@@ -175,17 +170,18 @@ ${kickGuide}`;
 반드시 아래 JSON 배열 형식으로만 응답하세요. 다른 설명이나 마크다운은 절대 포함하지 마세요.
 모든 텍스트 필드(title, desc, kick, dialog, narration, summary)는 반드시 ${langName}로 작성하세요.
 JSON 배열 길이는 정확히 ${generationCount}개여야 합니다.
+각 항목의 title에는 반드시 화차를 포함하세요 (예: "1화 - 제목", "2화 - 제목").
 
 [
   {
-    "episode": ${serialMode ? 1 : 0},
-    "title": "스토리 제목 (짧고 임팩트있게, 5~10자)",
+    "episode": 1,
+    "title": "1화 - 스토리 제목 (짧고 임팩트있게, 5~10자)",
     "desc": "상황 한 줄 설명 (어떤 상황인지 구체적으로)",
     "kick": "반전 포인트 + 이모지",
     "dialog": [${Array.from({ length: panelCount }, (_, i) => `"컷${i + 1} 대사"`).join(', ')}],
     "narration": "마지막 내레이션 (감성적 여운, 독자 마음을 울리는 한 문장)",
     "summary": "핵심 요약 (가장 공감되는 장면을 한 문장으로)",
-    "character": "${character}"
+    "character": "해당 화의 주인공 이름/설정 (다른 화와 중복 금지)"
   }
 ]
 
@@ -219,7 +215,7 @@ export function parseStoryResponse(text: string, panelCount: number, expectedCou
   }
 
   const normalized = parsed
-    .filter((story): story is GeneratedStory => {
+    .filter((story): story is GeneratedStory & { episode?: number } => {
       return (
         typeof story.title === 'string' &&
         typeof story.desc === 'string' &&
@@ -230,8 +226,9 @@ export function parseStoryResponse(text: string, panelCount: number, expectedCou
         typeof story.character === 'string'
       );
     })
-    .map((story) => ({
+    .map((story, index) => ({
       ...story,
+      episode: typeof story.episode === 'number' ? story.episode : (expectedCount ? index + 1 : undefined),
       dialog: story.dialog.length >= panelCount
         ? story.dialog.slice(0, panelCount)
         : [...story.dialog, ...Array(panelCount - story.dialog.length).fill('...')],

@@ -16,6 +16,7 @@ type ViewMode = 'list' | 'compare';
 export default function PromptCards() {
   const generatedPrompts = useAppStore((s) => s.generatedPrompts);
   const generatedStories = useAppStore((s) => s.generatedStories);
+  const serialMode = useAppStore((s) => s.serialMode);
   const hasEverCopied = useAppStore((s) => s.hasEverCopied);
   const markCopied = useAppStore((s) => s.markCopied);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -66,6 +67,11 @@ export default function PromptCards() {
             <span className="font-bold text-base text-text">
               {story?.title ?? color.label}
             </span>
+            {serialMode && story && (
+              <span className="text-xs font-semibold text-primary bg-primary-light px-2 py-0.5 rounded-full">
+                {story.episode ?? idx + 1}화
+              </span>
+            )}
             {story && (
               <span className="text-sm text-muted">— {story.character}</span>
             )}
@@ -167,6 +173,7 @@ export default function PromptCards() {
                   `}
                 >
                   {generatedStories[idx]?.title ?? `스토리 ${idx + 1}`}
+                  {serialMode && generatedStories[idx] ? ` · ${generatedStories[idx]?.episode ?? idx + 1}화` : ''}
                 </button>
               );
             })}

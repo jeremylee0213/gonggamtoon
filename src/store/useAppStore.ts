@@ -31,7 +31,6 @@ interface AppState {
   serialMode: boolean;
   serialEpisodeCount: number;
   previousEpisodeSummary: string;
-  empathyIntensity: number;
 
   // 스토리 생성 상태
   generatedStories: GeneratedStory[];
@@ -81,7 +80,6 @@ interface AppState {
   setSerialMode: (on: boolean) => void;
   setSerialEpisodeCount: (count: number) => void;
   setPreviousEpisodeSummary: (text: string) => void;
-  setEmpathyIntensity: (level: number) => void;
 
   // 액션 - 스토리
   setGeneratedStories: (stories: GeneratedStory[]) => void;
@@ -145,7 +143,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   serialMode: false,
   serialEpisodeCount: 3,
   previousEpisodeSummary: '',
-  empathyIntensity: 3,
 
   generatedStories: [],
   generatedPrompts: [],
@@ -243,7 +240,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSerialMode: (on) => set({ serialMode: on }),
   setSerialEpisodeCount: (count) => set({ serialEpisodeCount: Math.max(2, Math.min(20, count)) }),
   setPreviousEpisodeSummary: (text) => set({ previousEpisodeSummary: text }),
-  setEmpathyIntensity: (level) => set({ empathyIntensity: Math.max(1, Math.min(5, level)) }),
 
   setGeneratedStories: (stories) => set({ generatedStories: stories, selectedStory: null, generatedPrompts: [], editedDialogs: {} }),
   setGeneratedPrompts: (prompts) => set({ generatedPrompts: prompts }),
@@ -334,7 +330,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     serialMode: false,
     serialEpisodeCount: 3,
     previousEpisodeSummary: '',
-    empathyIntensity: 3,
     generatedStories: [],
     generatedPrompts: [],
     selectedStory: null,

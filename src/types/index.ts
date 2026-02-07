@@ -22,6 +22,7 @@ export interface Story {
 export interface GeneratedStory extends Story {
   summary: string;
   character: string;
+  episode?: number;
 }
 
 export interface ThemeMeta {

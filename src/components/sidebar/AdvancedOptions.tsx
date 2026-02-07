@@ -5,8 +5,6 @@ import { KICK_TYPE_OPTIONS } from '../../data/kickTypes';
 import { NARRATION_STYLE_OPTIONS } from '../../data/narrationStyles';
 import { showToast } from '../common/Toast';
 
-const EMPATHY_LABELS = ['', '가볍게', '공감', '무릎 탁', '강한 공감', '극한 공감'];
-
 export default function AdvancedOptions() {
   const [open, setOpen] = useState(false);
   const selectedKickType = useAppStore((s) => s.selectedKickType);
@@ -19,8 +17,6 @@ export default function AdvancedOptions() {
   const setSignature = useAppStore((s) => s.setSignature);
   const referenceText = useAppStore((s) => s.referenceText);
   const setReferenceText = useAppStore((s) => s.setReferenceText);
-  const empathyIntensity = useAppStore((s) => s.empathyIntensity);
-  const setEmpathyIntensity = useAppStore((s) => s.setEmpathyIntensity);
   const exportFavorites = useAppStore((s) => s.exportFavorites);
   const importFavorites = useAppStore((s) => s.importFavorites);
   const favorites = useAppStore((s) => s.favorites);
@@ -65,7 +61,7 @@ export default function AdvancedOptions() {
         <span className="flex items-center gap-2 text-base font-bold text-text">
           <Settings2 className="w-5 h-5 text-accent" />
           고급 옵션
-          {!open && (selectedKickType !== 'auto' || selectedNarrationStyle !== 'auto' || empathyIntensity !== 3 || protagonistName.trim()) && (
+          {!open && (selectedKickType !== 'auto' || selectedNarrationStyle !== 'auto' || protagonistName.trim()) && (
             <span className="text-xs font-normal text-accent bg-accent-light px-2 py-0.5 rounded-full">커스텀</span>
           )}
         </span>
@@ -74,24 +70,9 @@ export default function AdvancedOptions() {
 
       {open && (
         <div className="px-4 pb-4 space-y-4 border-t border-border pt-3">
-          {/* #30: Empathy Intensity */}
-          <div>
-            <label className="text-sm font-bold text-text block mb-2">
-              공감 강도 <span className="text-accent font-normal">{empathyIntensity}/5 — {EMPATHY_LABELS[empathyIntensity]}</span>
-            </label>
-            <input
-              type="range"
-              min={1}
-              max={5}
-              value={empathyIntensity}
-              onChange={(e) => setEmpathyIntensity(Number(e.target.value))}
-              className="w-full accent-accent"
-            />
-            <div className="flex justify-between text-xs text-muted mt-1">
-              <span>가볍게</span>
-              <span>극한 공감</span>
-            </div>
-          </div>
+          <p className="text-xs text-muted bg-accent-light/60 rounded-lg px-3 py-2">
+            공감 강도는 고정으로 극한 공감 모드가 적용됩니다.
+          </p>
 
           {/* #23: Kick Type */}
           <div>
