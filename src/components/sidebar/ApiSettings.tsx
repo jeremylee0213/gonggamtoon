@@ -13,7 +13,7 @@ const PROVIDERS: { type: ProviderType; label: string; icon: string }[] = [
 ];
 
 export default function ApiSettings() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [showKey, setShowKey] = useState(false);
   const { activeProvider, apiKeys, selectedModels, setActiveProvider, setApiKey, setSelectedModel } = useAppStore();
 
@@ -25,34 +25,39 @@ export default function ApiSettings() {
 
   const models = providerModels[activeProvider];
   const currentKey = apiKeys[activeProvider];
+  const currentProvider = PROVIDERS.find((p) => p.type === activeProvider);
 
   return (
-    <div className="bg-primary-light/50 border border-primary/20 rounded-xl p-3 mb-4">
+    <div className="bg-card border border-border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
-        className="w-full flex items-center justify-between text-sm font-bold text-primary-dark cursor-pointer"
+        className="w-full flex items-center justify-between text-base font-bold text-text cursor-pointer"
       >
-        <span className="flex items-center gap-1.5">
-          <Zap className="w-4 h-4" />
+        <span className="flex items-center gap-2">
+          <Zap className="w-5 h-5 text-primary" />
           API 설정
+          {collapsed && currentKey && (
+            <span className="text-sm font-normal text-muted ml-2">
+              {currentProvider?.icon} {currentProvider?.label} · {selectedModels[activeProvider]}
+            </span>
+          )}
         </span>
-        {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+        {collapsed ? <ChevronDown className="w-5 h-5 text-muted" /> : <ChevronUp className="w-5 h-5 text-muted" />}
       </button>
 
       {!collapsed && (
-        <div className="mt-3 space-y-3">
-          {/* Provider Tabs */}
-          <div className="flex gap-1" role="radiogroup" aria-label="API Provider">
+        <div className="mt-4 space-y-4">
+          <div className="flex gap-2" role="radiogroup" aria-label="API Provider">
             {PROVIDERS.map((p) => (
               <button
                 key={p.type}
                 type="button"
                 onClick={() => setActiveProvider(p.type)}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                className={`flex-1 py-2.5 rounded-xl text-sm font-bold cursor-pointer transition-all ${
                   activeProvider === p.type
-                    ? 'bg-primary text-white'
-                    : 'bg-white/60 text-muted hover:bg-white'
+                    ? 'bg-primary text-white shadow-[0_2px_8px_rgba(0,122,255,0.3)]'
+                    : 'bg-surface text-muted hover:bg-surface/80'
                 }`}
                 role="radio"
                 aria-checked={activeProvider === p.type}
@@ -62,11 +67,10 @@ export default function ApiSettings() {
             ))}
           </div>
 
-          {/* Model Select */}
           <select
             value={selectedModels[activeProvider]}
             onChange={(e) => setSelectedModel(activeProvider, e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm"
+            className="w-full px-4 py-2.5 rounded-xl border border-border bg-white text-base shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] dark:bg-card"
             aria-label="모델 선택"
           >
             {models.map((m) => (
@@ -76,37 +80,35 @@ export default function ApiSettings() {
             ))}
           </select>
 
-          {/* API Key Input */}
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <input
               type={showKey ? 'text' : 'password'}
               value={currentKey}
               onChange={(e) => setApiKey(activeProvider, e.target.value.trim())}
-              placeholder={`${PROVIDERS.find((p) => p.type === activeProvider)?.label} API 키`}
-              className={`flex-1 px-3 py-2 rounded-lg border text-sm ${
-                currentKey ? 'border-success bg-green-50' : 'border-border bg-white'
+              placeholder={`${currentProvider?.label} API 키`}
+              className={`flex-1 px-4 py-2.5 rounded-xl border text-base shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] ${
+                currentKey ? 'border-success bg-green-50 dark:bg-green-900/20' : 'border-border bg-white dark:bg-card'
               }`}
               aria-label="API 키 입력"
             />
             <button
               type="button"
               onClick={() => setShowKey(!showKey)}
-              className="px-2.5 border border-border rounded-lg cursor-pointer hover:bg-white"
+              className="px-3 border border-border rounded-xl cursor-pointer hover:bg-surface transition-colors"
               aria-label={showKey ? 'API 키 숨기기' : 'API 키 보기'}
             >
-              {showKey ? <EyeOff className="w-4 h-4 text-muted" /> : <Eye className="w-4 h-4 text-muted" />}
+              {showKey ? <EyeOff className="w-5 h-5 text-muted" /> : <Eye className="w-5 h-5 text-muted" />}
             </button>
           </div>
 
-          {/* Warning + Clear */}
           <div className="flex items-center justify-between">
-            <p className="text-[10px] text-muted">API 키는 이 탭에서만 유효합니다</p>
+            <p className="text-sm text-muted">API 키는 이 탭에서만 유효합니다</p>
             <button
               type="button"
               onClick={handleClearAll}
-              className="flex items-center gap-1 text-[10px] text-error cursor-pointer hover:underline"
+              className="flex items-center gap-1 text-sm text-error cursor-pointer hover:underline"
             >
-              <Trash2 className="w-3 h-3" />
+              <Trash2 className="w-4 h-4" />
               전체 삭제
             </button>
           </div>

@@ -7,6 +7,10 @@
     <meta name="description" content="나노바나나 프로 전용 공감툰 프롬프트 봇 - Google, OpenAI, Claude API 지원" />
     <meta property="og:title" content="나노바나나 프로 | 공감툰 프롬프트 봇" />
     <meta property="og:description" content="AI로 공감툰을 만들어보세요. ADHD, HSP, INFJ 등 다양한 공감 주제 지원." />
+    <meta name="theme-color" content="#007AFF" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href="/gonggamtoon/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
@@ -15,5 +19,12 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/gonggamtoon/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

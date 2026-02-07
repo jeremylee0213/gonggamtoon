@@ -18,16 +18,16 @@ export default function PanelSelector() {
   };
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="bg-accent text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">
-          2
+    <div>
+      <div className="flex items-center gap-2.5 mb-2">
+        <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(0,122,255,0.3)]">
+          3
         </span>
-        <span className="text-sm font-bold text-muted">컷 수</span>
+        <span className="text-base font-bold text-text">컷 수</span>
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-600 dark:text-gray-300">
+        <span className="text-base text-muted">
           {customPanelCount
             ? `${customPanelCount}컷`
             : `${DEFAULT_PANELS}컷 (기본)`}
@@ -39,9 +39,9 @@ export default function PanelSelector() {
           value={customPanelCount ?? ''}
           onChange={handleCustomChange}
           placeholder={String(DEFAULT_PANELS)}
-          className="w-16 px-2 py-1 text-xs text-center border border-gray-200 rounded-lg bg-white focus:outline-none focus:border-blue-400 dark:bg-gray-800 dark:border-gray-600"
+          className="w-20 px-3 py-2 text-base text-center border border-border rounded-xl bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] focus:outline-none focus:border-primary dark:bg-card"
         />
-        <span className="text-[10px] text-gray-400">4~16</span>
+        <span className="text-sm text-muted">4~16</span>
       </div>
     </div>
   );

@@ -38,7 +38,7 @@ export default function ToastContainer() {
   const icons = {
     success: <CheckCircle className="w-5 h-5 text-success" />,
     error: <AlertCircle className="w-5 h-5 text-error" />,
-    info: <Info className="w-5 h-5 text-accent" />,
+    info: <Info className="w-5 h-5 text-primary" />,
   };
 
   const bgColors = {
@@ -54,10 +54,10 @@ export default function ToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg animate-[fadeIn_0.3s_ease-in-out] ${bgColors[toast.type]}`}
+          className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl border shadow-[0_4px_16px_rgba(0,0,0,0.1)] animate-[fadeIn_0.3s_ease-in-out] ${bgColors[toast.type]}`}
         >
           {icons[toast.type]}
-          <span className="text-sm font-medium">{toast.message}</span>
+          <span className="text-base font-medium">{toast.message}</span>
           <button
             type="button"
             onClick={() => removeToast(toast.id)}

@@ -2,51 +2,50 @@ import { RefreshCw } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import StoryCard from './StoryCard';
 
-function SkeletonCard() {
+function ShimmerCard() {
   return (
-    <div className="w-full p-3 rounded-xl border border-gray-200 animate-pulse">
-      <div className="flex gap-1.5 mb-2">
-        <div className="h-4 w-14 bg-gray-200 rounded-full" />
-        <div className="h-4 w-12 bg-gray-200 rounded-full" />
+    <div className="w-full p-4 rounded-2xl border border-border bg-card overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent dark:via-white/10 animate-[shimmer_1.5s_ease-in-out_infinite] bg-[length:200%_100%]" />
+      <div className="flex gap-2 mb-3">
+        <div className="h-5 w-16 bg-border rounded-full" />
+        <div className="h-5 w-14 bg-border rounded-full" />
       </div>
-      <div className="h-4 w-3/4 bg-gray-200 rounded mb-2" />
-      <div className="h-12 w-full bg-gray-100 rounded mb-2" />
-      <div className="h-3 w-full bg-gray-100 rounded mb-1" />
-      <div className="h-3 w-2/3 bg-gray-100 rounded" />
+      <div className="h-5 w-3/4 bg-border rounded mb-3" />
+      <div className="h-14 w-full bg-surface rounded-lg mb-3" />
+      <div className="h-4 w-full bg-surface rounded mb-1.5" />
+      <div className="h-4 w-2/3 bg-surface rounded" />
     </div>
   );
 }
 
 export default function StorySelector() {
-  const {
-    generatedStories,
-    selectedStory,
-    isGeneratingStories,
-    setSelectedStory,
-    getEffectiveTheme,
-    requestRegenerate,
-  } = useAppStore();
+  const generatedStories = useAppStore((s) => s.generatedStories);
+  const selectedStory = useAppStore((s) => s.selectedStory);
+  const isGeneratingStories = useAppStore((s) => s.isGeneratingStories);
+  const setSelectedStory = useAppStore((s) => s.setSelectedStory);
+  const getEffectiveTheme = useAppStore((s) => s.getEffectiveTheme);
+  const requestRegenerate = useAppStore((s) => s.requestRegenerate);
 
   const themeName = getEffectiveTheme();
 
   if (generatedStories.length === 0 && !isGeneratingStories) return null;
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="bg-accent text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">
+    <div>
+      <div className="flex items-center gap-2.5 mb-4">
+        <span className="bg-warning text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-[0_2px_6px_rgba(255,149,0,0.3)]">
           4
         </span>
-        <span className="text-sm font-bold text-muted">스토리 선택</span>
+        <span className="text-lg font-bold text-text">스토리 선택</span>
       </div>
 
-      <div className="space-y-2" role="radiogroup" aria-label="스토리 선택">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3" role="radiogroup" aria-label="스토리 선택">
         {isGeneratingStories ? (
           <>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
+            <ShimmerCard />
+            <ShimmerCard />
+            <ShimmerCard />
+            <ShimmerCard />
           </>
         ) : (
           generatedStories.map((story, idx) => (
@@ -68,9 +67,9 @@ export default function StorySelector() {
             setSelectedStory(null);
             requestRegenerate();
           }}
-          className="mt-2 flex items-center gap-1 text-xs text-muted border border-gray-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 w-full justify-center"
+          className="mt-3 flex items-center gap-2 text-sm text-muted border border-border rounded-xl px-4 py-2.5 cursor-pointer hover:bg-surface hover:shadow-sm transition-all w-full justify-center"
         >
-          <RefreshCw className="w-3 h-3" />
+          <RefreshCw className="w-4 h-4" />
           다시 생성
         </button>
       )}

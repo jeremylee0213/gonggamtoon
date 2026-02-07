@@ -1,8 +1,9 @@
 import { Component, type ReactNode } from 'react';
-import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
+  fallbackMessage?: string;
 }
 
 interface State {
@@ -17,35 +18,30 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  handleReset = () => {
+  handleRetry = () => {
     this.setState({ hasError: false, error: null });
   };
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex items-center justify-center min-h-screen bg-surface p-8">
-          <div className="text-center max-w-md">
-            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle className="w-8 h-8 text-red-500" />
-            </div>
-            <h2 className="text-xl font-bold text-text mb-2">오류가 발생했습니다</h2>
-            <p className="text-sm text-muted mb-4">
-              {this.state.error?.message || '예상치 못한 오류가 발생했습니다.'}
-            </p>
-            <button
-              type="button"
-              onClick={this.handleReset}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-white text-sm font-bold cursor-pointer hover:bg-accent/90"
-            >
-              <RotateCcw className="w-4 h-4" />
-              다시 시도
-            </button>
-          </div>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
+          <AlertTriangle className="w-10 h-10 text-error mx-auto mb-3" />
+          <p className="text-base font-bold text-error mb-2">
+            {this.props.fallbackMessage ?? '오류가 발생했어요'}
+          </p>
+          <p className="text-sm text-muted mb-4">{this.state.error?.message}</p>
+          <button
+            type="button"
+            onClick={this.handleRetry}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold cursor-pointer hover:bg-primary-dark transition-colors shadow-[0_2px_8px_rgba(0,122,255,0.3)]"
+          >
+            <RefreshCw className="w-4 h-4" />
+            다시 시도
+          </button>
         </div>
       );
     }
-
     return this.props.children;
   }
 }

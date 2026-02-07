@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { showToast } from './Toast';
+import confetti from 'canvas-confetti';
 
 interface CopyButtonProps {
   text: string;
@@ -26,6 +27,15 @@ export default function CopyButton({ text, label = '복사' }: CopyButtonProps) 
       }
       setCopied(true);
       showToast('클립보드에 복사했어요!', 'success');
+
+      // Confetti celebration
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.7 },
+        colors: ['#007AFF', '#5856D6', '#34C759', '#FF9500'],
+      });
+
       setTimeout(() => setCopied(false), 2000);
     } catch {
       showToast('복사에 실패했어요', 'error');
@@ -37,14 +47,14 @@ export default function CopyButton({ text, label = '복사' }: CopyButtonProps) 
       type="button"
       onClick={handleCopy}
       className={`
-        flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold cursor-pointer transition-colors
+        flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold cursor-pointer transition-all
         ${copied
-          ? 'bg-success text-white'
-          : 'bg-accent text-white hover:bg-accent/90'
+          ? 'bg-success text-white shadow-[0_2px_8px_rgba(52,199,89,0.3)]'
+          : 'bg-primary text-white hover:bg-primary-dark shadow-[0_2px_8px_rgba(0,122,255,0.3)] hover:shadow-[0_4px_12px_rgba(0,122,255,0.4)] hover:-translate-y-0.5'
         }
       `}
     >
-      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+      {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
       {copied ? '복사 완료!' : label}
     </button>
   );

@@ -6,37 +6,38 @@ import { generateTextWithProvider, abortCurrentRequest } from '../../api/factory
 import { buildPrompt } from '../../prompt/builder';
 import { getLayoutForPanels } from '../../data/panelLayouts';
 import { showToast } from '../common/Toast';
+import { scrollToSection } from '../../hooks/useAutoScroll';
 
 const MAX_RETRY = 1;
 
 export default function GenerateButtons() {
-  const store = useAppStore();
-  const {
-    selectedStyle,
-    customStyleInput,
-    selectedPanels,
-    customPanelCount,
-    selectedTheme,
-    customThemeInput,
-    selectedStory,
-    isGeneratingStories,
-    regenerateRequested,
-    activeProvider,
-    apiKeys,
-    selectedModels,
-    setGeneratedStories,
-    setSelectedStory,
-    setGeneratingStories,
-    clearRegenerateRequest,
-    addMessage,
-    isReadyToGenerate,
-  } = store;
+  // Zustand selector optimization: individual selectors instead of full store
+  const selectedStyle = useAppStore((s) => s.selectedStyle);
+  const customStyleInput = useAppStore((s) => s.customStyleInput);
+  const selectedPanels = useAppStore((s) => s.selectedPanels);
+  const customPanelCount = useAppStore((s) => s.customPanelCount);
+  const selectedTheme = useAppStore((s) => s.selectedTheme);
+  const customThemeInput = useAppStore((s) => s.customThemeInput);
+  const selectedStory = useAppStore((s) => s.selectedStory);
+  const isGeneratingStories = useAppStore((s) => s.isGeneratingStories);
+  const regenerateRequested = useAppStore((s) => s.regenerateRequested);
+  const activeProvider = useAppStore((s) => s.activeProvider);
+  const apiKeys = useAppStore((s) => s.apiKeys);
+  const selectedModels = useAppStore((s) => s.selectedModels);
+  const setGeneratedStories = useAppStore((s) => s.setGeneratedStories);
+  const setSelectedStory = useAppStore((s) => s.setSelectedStory);
+  const setGeneratingStories = useAppStore((s) => s.setGeneratingStories);
+  const clearRegenerateRequest = useAppStore((s) => s.clearRegenerateRequest);
+  const addMessage = useAppStore((s) => s.addMessage);
+  const isReadyToGenerate = useAppStore((s) => s.isReadyToGenerate);
 
   const ready = isReadyToGenerate();
   const effectivePanels = customPanelCount ?? selectedPanels;
   const prevSelectedStoryRef = useRef(selectedStory);
 
-  // When a story is selected, automatically generate prompt and add to chat
+  // Debounce guard for generate
+  const isGeneratingRef = useRef(false);
+
   useEffect(() => {
     if (
       selectedStory &&
@@ -76,15 +77,18 @@ export default function GenerateButtons() {
       });
 
       showToast('프롬프트가 생성되었어요! 복사해서 나노바나나 프로에 붙여넣으세요.', 'success');
+      scrollToSection('section-prompt', 200);
     }
     prevSelectedStoryRef.current = selectedStory;
   }, [selectedStory, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, addMessage]);
 
   const handleGenerate = useCallback(async () => {
-    if (!ready) return;
+    if (!ready || isGeneratingRef.current) return;
+    isGeneratingRef.current = true;
 
     setGeneratingStories(true);
     setSelectedStory(null);
+    scrollToSection('section-stories');
 
     try {
       const prompt = buildStoryPrompt({
@@ -116,9 +120,7 @@ export default function GenerateButtons() {
           return;
         } catch (err) {
           lastError = err instanceof Error ? err : new Error(String(err));
-          // Don't retry on abort
           if (lastError.name === 'AbortError') throw lastError;
-          // Don't retry on API errors (only retry on JSON parse failures)
           if (lastError.message.includes('API') || lastError.message.includes('401') || lastError.message.includes('403')) {
             throw lastError;
           }
@@ -131,16 +133,16 @@ export default function GenerateButtons() {
       throw lastError ?? new Error('스토리 생성 중 오류가 발생했습니다');
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
-        return; // Silently ignore aborted requests
+        return;
       }
       const message = err instanceof Error ? err.message : '스토리 생성 중 오류가 발생했습니다';
       showToast(message, 'error');
     } finally {
       setGeneratingStories(false);
+      isGeneratingRef.current = false;
     }
   }, [ready, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, activeProvider, apiKeys, selectedModels, setGeneratedStories, setSelectedStory, setGeneratingStories]);
 
-  // Listen for regenerate requests from StorySelector
   useEffect(() => {
     if (regenerateRequested && !isGeneratingStories) {
       clearRegenerateRequest();
@@ -148,24 +150,23 @@ export default function GenerateButtons() {
     }
   }, [regenerateRequested, isGeneratingStories, clearRegenerateRequest, handleGenerate]);
 
-  // Cleanup: abort on unmount
   useEffect(() => {
     return () => abortCurrentRequest();
   }, []);
 
   return (
-    <div className="mt-4">
+    <div>
       <button
         id="btn-generate-stories"
         type="button"
         onClick={handleGenerate}
         disabled={!ready || isGeneratingStories}
         className={`
-          w-full py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-colors
+          w-full py-3.5 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all
           ${
             !ready || isGeneratingStories
-              ? 'bg-[#F5A623] opacity-50 cursor-not-allowed text-white'
-              : 'bg-[#F5A623] hover:bg-[#D4860A] cursor-pointer text-white'
+              ? 'bg-primary/50 cursor-not-allowed text-white'
+              : 'bg-primary hover:bg-primary-dark cursor-pointer text-white shadow-[0_4px_14px_rgba(0,122,255,0.4)] hover:shadow-[0_6px_20px_rgba(0,122,255,0.5)] hover:-translate-y-0.5'
           }
         `}
       >

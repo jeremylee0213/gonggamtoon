@@ -1,17 +1,22 @@
+import { lazy, Suspense } from 'react';
 import Header from './components/layout/Header';
-import Sidebar from './components/layout/Sidebar';
-import ChatPanel from './components/layout/ChatPanel';
+import MainContent from './components/layout/MainContent';
 import ToastContainer from './components/common/Toast';
+import ErrorBoundary from './components/common/ErrorBoundary';
+
+const OnboardingTour = lazy(() => import('./components/common/OnboardingTour'));
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-surface text-text">
-      <Header />
-      <div className="flex max-w-[1400px] mx-auto h-[calc(100vh-56px)] max-md:flex-col">
-        <Sidebar />
-        <ChatPanel />
+    <ErrorBoundary fallbackMessage="앱에 문제가 발생했어요">
+      <div className="min-h-screen bg-surface text-text">
+        <Header />
+        <MainContent />
+        <ToastContainer />
+        <Suspense fallback={null}>
+          <OnboardingTour />
+        </Suspense>
       </div>
-      <ToastContainer />
-    </div>
+    </ErrorBoundary>
   );
 }

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import ChatMessage from './ChatMessage';
-import EmptyState from './EmptyState';
 import LoadingSpinner from '../common/LoadingSpinner';
 
 const LOADING_MESSAGES = [
@@ -16,14 +15,13 @@ const LOADING_MESSAGES = [
 export default function ChatContainer() {
   const messages = useAppStore((s) => s.messages);
   const isGeneratingStories = useAppStore((s) => s.isGeneratingStories);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
   const [loadingIdx, setLoadingIdx] = useState(0);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isGeneratingStories]);
+    topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [messages]);
 
-  // Rotate loading messages
   useEffect(() => {
     if (!isGeneratingStories) {
       setLoadingIdx(0);
@@ -36,20 +34,27 @@ export default function ChatContainer() {
   }, [isGeneratingStories]);
 
   if (messages.length === 0 && !isGeneratingStories) {
-    return <EmptyState />;
+    return null;
   }
 
+  // Reverse: newest prompt first
+  const reversed = [...messages].reverse();
+
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-4" style={{ scrollbarWidth: 'thin' }}>
-      {messages.map((msg, idx) => (
-        <ChatMessage key={msg.id} message={msg} isFirstPrompt={msg.type === 'prompt' && !messages.slice(0, idx).some(m => m.type === 'prompt')} />
-      ))}
+    <div className="space-y-4">
+      <div ref={topRef} />
 
       {isGeneratingStories && (
         <LoadingSpinner text={LOADING_MESSAGES[loadingIdx]} />
       )}
 
-      <div ref={bottomRef} />
+      {reversed.map((msg, idx) => (
+        <ChatMessage
+          key={msg.id}
+          message={msg}
+          isFirstPrompt={msg.type === 'prompt' && idx === reversed.findIndex(m => m.type === 'prompt')}
+        />
+      ))}
     </div>
   );
 }

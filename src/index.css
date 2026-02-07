@@ -1,25 +1,27 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-primary: #F5A623;
-  --color-primary-light: #FFF3D6;
-  --color-primary-dark: #D4860A;
-  --color-accent: #4A90A4;
-  --color-accent-light: #E8F4F7;
-  --color-success: #27AE60;
-  --color-warning: #E67E22;
-  --color-error: #E74C3C;
-  --color-char: #9B59B6;
-  --color-surface: #FFFEF5;
+  --color-primary: #007AFF;
+  --color-primary-light: #EBF5FF;
+  --color-primary-dark: #0056CC;
+  --color-accent: #5856D6;
+  --color-accent-light: #F0EFFF;
+  --color-success: #34C759;
+  --color-warning: #FF9500;
+  --color-error: #FF3B30;
+  --color-char: #AF52DE;
+  --color-surface: #F5F5F7;
   --color-card: #FFFFFF;
-  --color-border: #E8ECEF;
-  --color-text: #2C3E50;
-  --color-muted: #5D6970;
+  --color-border: #D2D2D7;
+  --color-text: #1D1D1F;
+  --color-muted: #86868B;
 }
 
 @layer base {
   body {
-    font-family: 'Noto Sans KR', system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', system-ui, sans-serif;
     margin: 0;
     min-height: 100vh;
     background-color: var(--color-surface);
@@ -27,14 +29,12 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Focus visible for keyboard navigation */
   *:focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 3px solid var(--color-primary);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 8px;
   }
 
-  /* Scrollbar styling */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -45,6 +45,17 @@
   ::-webkit-scrollbar-thumb {
     background-color: var(--color-border);
     border-radius: 3px;
+  }
+
+  /* Dark mode overrides (class-based) */
+  .dark {
+    --color-surface: #000000;
+    --color-card: #1C1C1E;
+    --color-border: #38383A;
+    --color-text: #F5F5F7;
+    --color-muted: #98989D;
+    --color-primary-light: #0A1A2E;
+    --color-accent-light: #1A1540;
   }
 }
 
@@ -67,23 +78,7 @@
   100% { background-position: 200% 0; }
 }
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-surface: #1A1D21;
-    --color-card: #2A2D32;
-    --color-border: #3A3D42;
-    --color-text: #E8ECEF;
-    --color-muted: #9BA3AB;
-    --color-primary-light: #3D2E10;
-    --color-accent-light: #1A3A42;
-  }
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .max-md\:flex-col {
-    max-height: none;
-    height: auto;
-  }
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 122, 255, 0); }
 }
