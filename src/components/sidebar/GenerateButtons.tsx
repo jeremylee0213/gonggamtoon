@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { buildStoryPrompt, parseStoryResponse } from '../../prompt/storyGenerator';
 import { generateTextWithProvider, abortCurrentRequest } from '../../api/factory';
@@ -27,11 +27,20 @@ export default function GenerateButtons() {
   const setGeneratedPrompts = useAppStore((s) => s.setGeneratedPrompts);
   const setSelectedStory = useAppStore((s) => s.setSelectedStory);
   const setGeneratingStories = useAppStore((s) => s.setGeneratingStories);
+  const setGenerationPhase = useAppStore((s) => s.setGenerationPhase);
+  const generationPhase = useAppStore((s) => s.generationPhase);
   const clearRegenerateRequest = useAppStore((s) => s.clearRegenerateRequest);
   const dialogLanguage = useAppStore((s) => s.dialogLanguage);
   const customLanguageInput = useAppStore((s) => s.customLanguageInput);
   const contentMode = useAppStore((s) => s.contentMode);
   const isReadyToGenerate = useAppStore((s) => s.isReadyToGenerate);
+  const selectedKickType = useAppStore((s) => s.selectedKickType);
+  const selectedNarrationStyle = useAppStore((s) => s.selectedNarrationStyle);
+  const referenceText = useAppStore((s) => s.referenceText);
+  const serialMode = useAppStore((s) => s.serialMode);
+  const previousEpisodeSummary = useAppStore((s) => s.previousEpisodeSummary);
+  const empathyIntensity = useAppStore((s) => s.empathyIntensity);
+  const signature = useAppStore((s) => s.signature);
 
   const ready = isReadyToGenerate();
   const effectivePanels = customPanelCount ?? selectedPanels;
@@ -58,15 +67,17 @@ export default function GenerateButtons() {
         rows: layout.rows,
         dialogLanguage,
         contentMode,
+        signature,
       }),
     );
-  }, [selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, contentMode]);
+  }, [selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, contentMode, signature]);
 
   const handleGenerate = useCallback(async () => {
     if (!ready || isGeneratingRef.current) return;
     isGeneratingRef.current = true;
 
     setGeneratingStories(true);
+    setGenerationPhase('스토리 구상 중...');
     setSelectedStory(null);
     scrollToSection('section-stories');
 
@@ -80,12 +91,20 @@ export default function GenerateButtons() {
         dialogLanguage,
         customLanguageInput,
         contentMode,
+        selectedKickType,
+        selectedNarrationStyle,
+        referenceText,
+        serialMode,
+        previousEpisodeSummary,
+        empathyIntensity,
       });
 
       let lastError: Error | null = null;
 
       for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
         try {
+          setGenerationPhase(attempt > 0 ? `재시도 중... (${attempt}/${MAX_RETRY})` : 'API 응답 대기 중...');
+
           const response = await generateTextWithProvider(
             activeProvider,
             prompt,
@@ -93,6 +112,7 @@ export default function GenerateButtons() {
             selectedModels[activeProvider],
           );
 
+          setGenerationPhase('스토리 파싱 중...');
           const stories = parseStoryResponse(response, effectivePanels);
 
           if (stories.length === 0) {
@@ -101,7 +121,7 @@ export default function GenerateButtons() {
 
           setGeneratedStories(stories);
 
-          // Build all prompts immediately
+          setGenerationPhase('프롬프트 생성 중...');
           const prompts = buildAllPrompts(stories);
           setGeneratedPrompts(prompts);
 
@@ -124,15 +144,24 @@ export default function GenerateButtons() {
       throw lastError ?? new Error('스토리 생성 중 오류가 발생했습니다');
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
+        showToast('생성이 취소되었어요', 'info');
         return;
       }
       const message = err instanceof Error ? err.message : '스토리 생성 중 오류가 발생했습니다';
       showToast(message, 'error');
     } finally {
       setGeneratingStories(false);
+      setGenerationPhase('');
       isGeneratingRef.current = false;
     }
-  }, [ready, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, buildAllPrompts]);
+  }, [ready, selectedStyle, customStyleInput, selectedTheme, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, referenceText, serialMode, previousEpisodeSummary, empathyIntensity]);
+
+  const handleCancel = useCallback(() => {
+    abortCurrentRequest();
+    setGeneratingStories(false);
+    setGenerationPhase('');
+    isGeneratingRef.current = false;
+  }, [setGeneratingStories, setGenerationPhase]);
 
   useEffect(() => {
     if (regenerateRequested && !isGeneratingStories) {
@@ -146,7 +175,7 @@ export default function GenerateButtons() {
   }, []);
 
   return (
-    <div>
+    <div className="space-y-2">
       <button
         id="btn-generate-stories"
         type="button"
@@ -173,6 +202,22 @@ export default function GenerateButtons() {
           </>
         )}
       </button>
+
+      {isGeneratingStories && (
+        <>
+          {generationPhase && (
+            <p className="text-xs text-center text-muted animate-pulse">{generationPhase}</p>
+          )}
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="w-full py-2 rounded-xl text-sm text-error border border-error/30 flex items-center justify-center gap-1.5 cursor-pointer hover:bg-error/5 transition-colors"
+          >
+            <X className="w-4 h-4" />
+            취소
+          </button>
+        </>
+      )}
     </div>
   );
 }

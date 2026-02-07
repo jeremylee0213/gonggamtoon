@@ -21,12 +21,28 @@ interface AppState {
   customLanguageInput: string;
   contentMode: ContentMode;
 
+  // 고급 옵션 (#23, #24, #25, #27, #29, #30)
+  selectedKickType: string;
+  selectedNarrationStyle: string;
+  signature: string;
+  referenceText: string;
+  serialMode: boolean;
+  previousEpisodeSummary: string;
+  empathyIntensity: number;
+
   // 스토리 생성 상태
   generatedStories: GeneratedStory[];
   generatedPrompts: string[];
   selectedStory: GeneratedStory | null;
   isGeneratingStories: boolean;
   regenerateRequested: boolean;
+  generationPhase: string; // #12 progress phase
+
+  // 대사 편집 (#26)
+  editedDialogs: Record<number, string[]>;
+
+  // 복사 추적 (#13)
+  hasEverCopied: boolean;
 
   // API 상태
   activeProvider: ProviderType;
@@ -50,17 +66,36 @@ interface AppState {
   setCustomLanguageInput: (text: string) => void;
   setContentMode: (mode: ContentMode) => void;
 
+  // 액션 - 고급 옵션
+  setSelectedKickType: (type: string) => void;
+  setSelectedNarrationStyle: (style: string) => void;
+  setSignature: (name: string) => void;
+  setReferenceText: (text: string) => void;
+  setSerialMode: (on: boolean) => void;
+  setPreviousEpisodeSummary: (text: string) => void;
+  setEmpathyIntensity: (level: number) => void;
+
   // 액션 - 스토리
   setGeneratedStories: (stories: GeneratedStory[]) => void;
   setGeneratedPrompts: (prompts: string[]) => void;
   setSelectedStory: (story: GeneratedStory | null) => void;
   setGeneratingStories: (loading: boolean) => void;
+  setGenerationPhase: (phase: string) => void;
   requestRegenerate: () => void;
   clearRegenerateRequest: () => void;
+
+  // 액션 - 대사 편집
+  setEditedDialogs: (index: number, dialogs: string[]) => void;
+  clearEditedDialogs: () => void;
+
+  // 액션 - 복사 추적
+  markCopied: () => void;
 
   // 액션 - 즐겨찾기
   addFavorite: (story: GeneratedStory, prompt: string) => void;
   removeFavorite: (savedAt: number) => void;
+  exportFavorites: () => string;
+  importFavorites: (json: string) => void;
 
   // 액션 - API
   setActiveProvider: (provider: ProviderType) => void;
@@ -92,11 +127,24 @@ export const useAppStore = create<AppState>((set, get) => ({
   customLanguageInput: '',
   contentMode: '19',
 
+  // 고급 옵션
+  selectedKickType: 'auto',
+  selectedNarrationStyle: 'auto',
+  signature: (() => localStorage.getItem('gonggamtoon_signature') ?? 'Jeremy')(),
+  referenceText: '',
+  serialMode: false,
+  previousEpisodeSummary: '',
+  empathyIntensity: 3,
+
   generatedStories: [],
   generatedPrompts: [],
   selectedStory: null,
   isGeneratingStories: false,
   regenerateRequested: false,
+  generationPhase: '',
+
+  editedDialogs: {},
+  hasEverCopied: false,
 
   activeProvider: 'openai',
   apiKeys: {
@@ -115,22 +163,44 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   messages: [],
 
-  setStyle: (style) => set({ selectedStyle: style, customStyleInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null }),
-  setCustomStyleInput: (text) => set({ customStyleInput: text, selectedStyle: null, generatedStories: [], generatedPrompts: [], selectedStory: null }),
-  setPanels: (panels) => set({ selectedPanels: panels, customPanelCount: null, generatedStories: [], generatedPrompts: [], selectedStory: null }),
-  setCustomPanelCount: (count) => set({ customPanelCount: count, generatedStories: [], generatedPrompts: [], selectedStory: null }),
-  setTheme: (theme) => set({ selectedTheme: theme, customThemeInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null }),
-  setCustomThemeInput: (text) => set({ customThemeInput: text, selectedTheme: null, generatedStories: [], generatedPrompts: [], selectedStory: null }),
+  setStyle: (style) => set({ selectedStyle: style, customStyleInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
+  setCustomStyleInput: (text) => set({ customStyleInput: text, selectedStyle: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
+  setPanels: (panels) => set({ selectedPanels: panels, customPanelCount: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
+  setCustomPanelCount: (count) => set({ customPanelCount: count, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
+  setTheme: (theme) => set({ selectedTheme: theme, customThemeInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
+  setCustomThemeInput: (text) => set({ customThemeInput: text, selectedTheme: null, generatedStories: [], generatedPrompts: [], selectedStory: null, editedDialogs: {} }),
   setDialogLanguage: (lang) => set({ dialogLanguage: lang, customLanguageInput: '', generatedStories: [], generatedPrompts: [], selectedStory: null }),
   setCustomLanguageInput: (text) => set({ customLanguageInput: text, dialogLanguage: 'custom', generatedStories: [], generatedPrompts: [], selectedStory: null }),
   setContentMode: (mode) => set({ contentMode: mode, generatedStories: [], generatedPrompts: [], selectedStory: null }),
 
-  setGeneratedStories: (stories) => set({ generatedStories: stories, selectedStory: null, generatedPrompts: [] }),
+  // 고급 옵션 액션
+  setSelectedKickType: (type) => set({ selectedKickType: type }),
+  setSelectedNarrationStyle: (style) => set({ selectedNarrationStyle: style }),
+  setSignature: (name) => {
+    localStorage.setItem('gonggamtoon_signature', name);
+    set({ signature: name });
+  },
+  setReferenceText: (text) => set({ referenceText: text }),
+  setSerialMode: (on) => set({ serialMode: on }),
+  setPreviousEpisodeSummary: (text) => set({ previousEpisodeSummary: text }),
+  setEmpathyIntensity: (level) => set({ empathyIntensity: Math.max(1, Math.min(5, level)) }),
+
+  setGeneratedStories: (stories) => set({ generatedStories: stories, selectedStory: null, generatedPrompts: [], editedDialogs: {} }),
   setGeneratedPrompts: (prompts) => set({ generatedPrompts: prompts }),
   setSelectedStory: (story) => set({ selectedStory: story }),
-  setGeneratingStories: (loading) => set({ isGeneratingStories: loading }),
+  setGeneratingStories: (loading) => set({ isGeneratingStories: loading, generationPhase: loading ? 'API 요청 중...' : '' }),
+  setGenerationPhase: (phase) => set({ generationPhase: phase }),
   requestRegenerate: () => set({ regenerateRequested: true }),
   clearRegenerateRequest: () => set({ regenerateRequested: false }),
+
+  // 대사 편집
+  setEditedDialogs: (index, dialogs) => set((state) => ({
+    editedDialogs: { ...state.editedDialogs, [index]: dialogs },
+  })),
+  clearEditedDialogs: () => set({ editedDialogs: {} }),
+
+  // 복사 추적
+  markCopied: () => set({ hasEverCopied: true }),
 
   addFavorite: (story, prompt) => {
     set((state) => {
@@ -146,6 +216,23 @@ export const useAppStore = create<AppState>((set, get) => ({
       return { favorites: updated };
     });
   },
+  exportFavorites: () => {
+    const { favorites } = get();
+    return JSON.stringify(favorites, null, 2);
+  },
+  importFavorites: (json) => {
+    try {
+      const parsed = JSON.parse(json);
+      if (!Array.isArray(parsed)) throw new Error('Invalid format');
+      const valid = parsed.filter((f: { story?: unknown; prompt?: unknown; savedAt?: unknown }) =>
+        f.story && typeof f.prompt === 'string' && typeof f.savedAt === 'number'
+      );
+      localStorage.setItem('gonggamtoon_favorites', JSON.stringify(valid.slice(-20)));
+      set({ favorites: valid.slice(-20) });
+    } catch {
+      throw new Error('즐겨찾기 데이터 형식이 올바르지 않습니다.');
+    }
+  },
 
   setActiveProvider: (provider) => set({ activeProvider: provider }),
   setApiKey: (provider, key) => {
@@ -153,7 +240,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) => ({ apiKeys: { ...state.apiKeys, [provider]: key } }));
   },
   setSelectedModel: (provider, model) => {
-    // Validate model exists for provider
     const models = providerModels[provider];
     if (models.some((m) => m.id === model)) {
       set((state) => ({ selectedModels: { ...state.selectedModels, [provider]: model } }));
@@ -166,7 +252,6 @@ export const useAppStore = create<AppState>((set, get) => ({
         ...state.messages,
         { ...message, id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, timestamp: Date.now() },
       ];
-      // Cap messages to prevent memory issues
       return { messages: newMessages.length > MAX_MESSAGES ? newMessages.slice(-MAX_MESSAGES) : newMessages };
     }),
   clearMessages: () => set({ messages: [] }),
@@ -181,11 +266,19 @@ export const useAppStore = create<AppState>((set, get) => ({
     dialogLanguage: 'ko',
     customLanguageInput: '',
     contentMode: '19',
+    selectedKickType: 'auto',
+    selectedNarrationStyle: 'auto',
+    referenceText: '',
+    serialMode: false,
+    previousEpisodeSummary: '',
+    empathyIntensity: 3,
     generatedStories: [],
     generatedPrompts: [],
     selectedStory: null,
     isGeneratingStories: false,
     regenerateRequested: false,
+    generationPhase: '',
+    editedDialogs: {},
     messages: [],
   }),
 

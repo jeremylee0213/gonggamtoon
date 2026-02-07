@@ -71,4 +71,5 @@ export interface PromptConfig {
   rows: number;
   dialogLanguage?: string;
   contentMode?: string;
+  signature?: string;
 }

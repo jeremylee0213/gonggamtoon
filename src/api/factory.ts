@@ -3,7 +3,8 @@ import { generateTextWithGemini } from './gemini';
 import { generateTextWithOpenAI } from './openai';
 import { generateTextWithClaude } from './claude';
 
-// Shared AbortController for cancellable requests
+const REQUEST_TIMEOUT_MS = 60_000;
+
 let currentController: AbortController | null = null;
 
 export function abortCurrentRequest() {
@@ -19,10 +20,13 @@ export async function generateTextWithProvider(
   apiKey: string,
   model: string,
 ): Promise<string> {
-  // Cancel any previous request
   abortCurrentRequest();
   currentController = new AbortController();
   const { signal } = currentController;
+
+  const timeoutId = setTimeout(() => {
+    currentController?.abort();
+  }, REQUEST_TIMEOUT_MS);
 
   try {
     let result: string;
@@ -40,7 +44,13 @@ export async function generateTextWithProvider(
         throw new Error(`지원하지 않는 Provider: ${provider}`);
     }
     return result;
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('요청 시간이 초과되었습니다. 다시 시도해 주세요.');
+    }
+    throw err;
   } finally {
+    clearTimeout(timeoutId);
     currentController = null;
   }
 }

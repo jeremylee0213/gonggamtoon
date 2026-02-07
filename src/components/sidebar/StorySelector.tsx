@@ -1,11 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { showToast } from '../common/Toast';
+import { copyToClipboard } from '../../utils/clipboard';
 import confetti from 'canvas-confetti';
 import StoryCard from './StoryCard';
 
-function ShimmerCard() {
+const ShimmerCard = memo(function ShimmerCard() {
   return (
     <div className="w-full p-4 rounded-2xl border border-border bg-card overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent dark:via-white/10 animate-[shimmer_1.5s_ease-in-out_infinite] bg-[length:200%_100%]" />
@@ -18,22 +19,7 @@ function ShimmerCard() {
       <div className="h-4 w-full bg-surface rounded" />
     </div>
   );
-}
-
-async function copyToClipboard(text: string) {
-  if (navigator.clipboard) {
-    await navigator.clipboard.writeText(text);
-  } else {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-  }
-}
+});
 
 export default function StorySelector() {
   const generatedStories = useAppStore((s) => s.generatedStories);
@@ -43,6 +29,8 @@ export default function StorySelector() {
   const setSelectedStory = useAppStore((s) => s.setSelectedStory);
   const getEffectiveTheme = useAppStore((s) => s.getEffectiveTheme);
   const requestRegenerate = useAppStore((s) => s.requestRegenerate);
+  const hasEverCopied = useAppStore((s) => s.hasEverCopied);
+  const markCopied = useAppStore((s) => s.markCopied);
 
   const themeName = getEffectiveTheme();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -58,18 +46,21 @@ export default function StorySelector() {
       setCopiedIndex(index);
       showToast(`스토리 ${index + 1} 프롬프트가 복사되었어요!`, 'success');
 
-      confetti({
-        particleCount: 60,
-        spread: 50,
-        origin: { y: 0.7 },
-        colors: ['#007AFF', '#5856D6', '#34C759', '#FF9500'],
-      });
+      if (!hasEverCopied) {
+        confetti({
+          particleCount: 60,
+          spread: 50,
+          origin: { y: 0.7 },
+          colors: ['#007AFF', '#5856D6', '#34C759', '#FF9500'],
+        });
+        markCopied();
+      }
 
       setTimeout(() => setCopiedIndex(null), 2000);
     } catch {
       showToast('복사에 실패했어요', 'error');
     }
-  }, [generatedPrompts, setSelectedStory]);
+  }, [generatedPrompts, setSelectedStory, hasEverCopied, markCopied]);
 
   if (generatedStories.length === 0 && !isGeneratingStories) return null;
 

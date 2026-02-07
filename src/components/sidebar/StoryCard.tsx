@@ -1,6 +1,9 @@
+import { memo } from 'react';
 import { Copy, Check, Star } from 'lucide-react';
 import type { GeneratedStory } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
+import EmotionCurve from '../common/EmotionCurve';
+import DialogEditor from './DialogEditor';
 
 interface StoryCardProps {
   story: GeneratedStory;
@@ -17,7 +20,7 @@ const CARD_COLORS = [
   { border: 'border-warning', bg: 'bg-warning', light: 'bg-[#FFF8EC]' },
 ];
 
-export default function StoryCard({ story, index, selected, onSelect, themeName, copied }: StoryCardProps) {
+export default memo(function StoryCard({ story, index, selected, onSelect, themeName, copied }: StoryCardProps) {
   const color = CARD_COLORS[index % CARD_COLORS.length];
   const favorites = useAppStore((s) => s.favorites);
   const addFavorite = useAppStore((s) => s.addFavorite);
@@ -37,9 +40,11 @@ export default function StoryCard({ story, index, selected, onSelect, themeName,
   };
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={(e) => { if (e.key === 'Enter') onSelect(); }}
       className={`
         w-full text-left p-4 rounded-2xl cursor-pointer transition-all
         ${
@@ -83,6 +88,14 @@ export default function StoryCard({ story, index, selected, onSelect, themeName,
 
       <div className="font-bold text-base mb-1">{story.title}</div>
       <p className="text-sm text-primary font-medium">{story.kick}</p>
-    </button>
+
+      {story.dialog.length >= 2 && (
+        <div className="mt-2">
+          <EmotionCurve dialogs={story.dialog} />
+        </div>
+      )}
+
+      <DialogEditor story={story} index={index} />
+    </div>
   );
-}
+});

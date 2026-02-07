@@ -6,7 +6,9 @@ import ThemeSelector from '../sidebar/ThemeSelector';
 import LanguageSelector from '../sidebar/LanguageSelector';
 import ModeSelector from '../sidebar/ModeSelector';
 import GenerateButtons from '../sidebar/GenerateButtons';
+import AdvancedOptions from '../sidebar/AdvancedOptions';
 import ProgressStepper from '../common/ProgressStepper';
+import SettingsSummaryBar from '../common/SettingsSummaryBar';
 import EmptyState from '../chat/EmptyState';
 import LoadingSpinner from '../common/LoadingSpinner';
 import MobileStickyButton from '../common/MobileStickyButton';
@@ -26,6 +28,8 @@ export default function MainContent() {
       <div className="mb-6">
         <ProgressStepper />
       </div>
+
+      <SettingsSummaryBar />
 
       <div className="flex gap-6 max-lg:flex-col">
         {/* Left: Settings */}
@@ -48,6 +52,10 @@ export default function MainContent() {
               <LanguageSelector />
               <ModeSelector />
             </div>
+          </section>
+
+          <section>
+            <AdvancedOptions />
           </section>
 
           <section id="section-generate" className="flex items-end gap-4">

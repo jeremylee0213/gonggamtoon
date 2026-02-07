@@ -27,6 +27,12 @@ export default function ApiSettings() {
   const currentKey = apiKeys[activeProvider];
   const currentProvider = PROVIDERS.find((p) => p.type === activeProvider);
 
+  const keyFormatWarning = currentKey && (
+    (activeProvider === 'openai' && !currentKey.startsWith('sk-'))
+    || (activeProvider === 'claude' && !currentKey.startsWith('sk-ant-'))
+    || (activeProvider === 'gemini' && !currentKey.startsWith('AI'))
+  );
+
   return (
     <div className="bg-card border border-border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <button
@@ -87,7 +93,11 @@ export default function ApiSettings() {
               onChange={(e) => setApiKey(activeProvider, e.target.value.trim())}
               placeholder={`${currentProvider?.label} API 키`}
               className={`flex-1 px-4 py-2.5 rounded-xl border text-base shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] ${
-                currentKey ? 'border-success bg-green-50 dark:bg-green-900/20' : 'border-border bg-white dark:bg-card'
+                currentKey
+                  ? keyFormatWarning
+                    ? 'border-warning bg-orange-50 dark:bg-orange-900/20'
+                    : 'border-success bg-green-50 dark:bg-green-900/20'
+                  : 'border-border bg-white dark:bg-card'
               }`}
               aria-label="API 키 입력"
             />
@@ -100,6 +110,14 @@ export default function ApiSettings() {
               {showKey ? <EyeOff className="w-5 h-5 text-muted" /> : <Eye className="w-5 h-5 text-muted" />}
             </button>
           </div>
+
+          {keyFormatWarning && (
+            <p className="text-xs text-warning">
+              {activeProvider === 'openai' && '키가 sk-로 시작해야 합니다'}
+              {activeProvider === 'claude' && '키가 sk-ant-로 시작해야 합니다'}
+              {activeProvider === 'gemini' && '키가 AI로 시작해야 합니다'}
+            </p>
+          )}
 
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted">API 키는 이 탭에서만 유효합니다</p>

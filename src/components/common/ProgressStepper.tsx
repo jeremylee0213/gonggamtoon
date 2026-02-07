@@ -18,13 +18,13 @@ export default function ProgressStepper() {
   const customThemeInput = useAppStore((s) => s.customThemeInput);
   const generatedStories = useAppStore((s) => s.generatedStories);
   const selectedStory = useAppStore((s) => s.selectedStory);
-  const messages = useAppStore((s) => s.messages);
+  const generatedPrompts = useAppStore((s) => s.generatedPrompts);
 
   const hasStyle = !!(selectedStyle || customStyleInput.trim());
   const hasTheme = !!(selectedTheme || customThemeInput.trim());
   const hasStories = generatedStories.length > 0;
   const hasSelectedStory = !!selectedStory;
-  const hasPrompt = messages.some((m) => m.type === 'prompt');
+  const hasPrompt = generatedPrompts.length > 0;
 
   const completedSteps = [hasStyle, hasTheme, true, hasStories, hasSelectedStory, hasPrompt];
   const currentStep = completedSteps.lastIndexOf(true);

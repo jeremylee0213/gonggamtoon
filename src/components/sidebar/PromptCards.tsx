@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Copy, Check, Columns2, List } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { showToast } from '../common/Toast';
+import { copyToClipboard } from '../../utils/clipboard';
 import confetti from 'canvas-confetti';
 
 const PROMPT_COLORS = [
@@ -10,26 +11,13 @@ const PROMPT_COLORS = [
   { border: 'border-warning', bg: 'bg-warning', light: 'bg-[#FFF8EC]', text: 'text-warning', label: '스토리 3' },
 ];
 
-async function copyToClipboard(text: string) {
-  if (navigator.clipboard) {
-    await navigator.clipboard.writeText(text);
-  } else {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-  }
-}
-
 type ViewMode = 'list' | 'compare';
 
 export default function PromptCards() {
   const generatedPrompts = useAppStore((s) => s.generatedPrompts);
   const generatedStories = useAppStore((s) => s.generatedStories);
+  const hasEverCopied = useAppStore((s) => s.hasEverCopied);
+  const markCopied = useAppStore((s) => s.markCopied);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -43,12 +31,15 @@ export default function PromptCards() {
       setCopiedIndex(index);
       showToast(`프롬프트 ${index + 1} 복사 완료!`, 'success');
 
-      confetti({
-        particleCount: 60,
-        spread: 50,
-        origin: { y: 0.7 },
-        colors: ['#007AFF', '#5856D6', '#34C759', '#FF9500'],
-      });
+      if (!hasEverCopied) {
+        confetti({
+          particleCount: 60,
+          spread: 50,
+          origin: { y: 0.7 },
+          colors: ['#007AFF', '#5856D6', '#34C759', '#FF9500'],
+        });
+        markCopied();
+      }
 
       setTimeout(() => setCopiedIndex(null), 2000);
     } catch {
