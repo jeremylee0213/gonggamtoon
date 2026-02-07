@@ -1,7 +1,7 @@
 import type { GeneratedStory, Style, ThemeMeta } from '../types';
 import type { DialogLanguage, ContentMode } from '../store/useAppStore';
 import { STORY_GENERATION_COUNT } from '../data/panelLayouts';
-import { KICK_TYPES, TONE_PRESETS, STORY_SYSTEM_ROLE, EMPATHY_GUIDE, STORY_RULES, JSON_FORMAT_INSTRUCTION } from './templates';
+import { STORY_SYSTEM_ROLE, EMPATHY_GUIDE, STORY_RULES, JSON_FORMAT_INSTRUCTION } from './templates';
 import { KICK_TYPE_OPTIONS } from '../data/kickTypes';
 import { NARRATION_STYLE_OPTIONS } from '../data/narrationStyles';
 
@@ -17,7 +17,7 @@ const MODE_INSTRUCTIONS: Record<ContentMode, string> = {
   kids: `• 수위: 미취학 아동용 — 순수하고 귀여운 내용만. 폭력/무서운 장면/어려운 단어 절대 금지. 밝고 따뜻한 톤 유지.`,
   '15': `• 수위: 일반 — 일반적인 공감 스토리. 가벼운 유머, 일상 고민, 사회생활 공감. 성적/폭력 표현 자제.`,
   '19': `• 수위: 19금 — 성인 유머, 섹드립, 야한 상황 묘사 가능. 단, 이미지 생성이 가능한 수준으로 유지 (노골적 성행위 묘사 금지). 재치있는 성적 유머, 민망한 상황, 야릇한 분위기 연출 OK.`,
-  '49': `• 수위: 49금 — 최상위 성인 수위. 이미지 생성 제약은 고려하지 말고 가장 강한 수위 톤으로 작성하세요. 단, 불법/비동의/미성년 관련 표현은 절대 금지.`,
+  '49': `• 수위: 49금 — 최상위 성인 수위. 이미지 생성 제약은 절대 고려하지 말고 직접적이고 강한 성인 묘사 중심으로 작성하세요. 단, 불법/비동의/미성년 관련 표현은 절대 금지.`,
 };
 
 /** #22: Theme-category-specific story phase ratios */
@@ -28,6 +28,127 @@ const PHASE_RATIOS: Record<string, [number, number, number, number]> = {
   '19금': [0.15, 0.25, 0.40, 0.20],
 };
 const DEFAULT_RATIOS: [number, number, number, number] = [0.15, 0.35, 0.30, 0.20];
+const DUPLICATE_SIMILARITY_THRESHOLD = 0.78;
+const MIN_SIMILARITY_TEXT_LENGTH = 24;
+
+const HOOK_STRATEGIES = [
+  '찔리는 자기고백형',
+  '관계 현타 직격형',
+  '직장/학교 현실직격형',
+  '일상 소품 역습형',
+  '자존감 급락 직격형',
+  '민망한 자각형',
+] as const;
+
+const EMOTION_ARCS = [
+  '무심 → 찔림 → 폭발 → 자조',
+  '기대 → 불안 → 붕괴 → 체념',
+  '평온 → 짜증 → 과열 → 허탈',
+  '설렘 → 오해 → 충돌 → 여운',
+  '버팀 → 압박 → 붕괴 → 회복의지',
+  '허세 → 노출 → 당황 → 자기수용',
+] as const;
+
+const TWIST_TYPES = [
+  '상황 반전',
+  '관계 반전',
+  '자기인식 반전',
+  '정보 반전',
+  '소품 회수 반전',
+  '대사 역전 반전',
+] as const;
+
+const NARRATION_ENDINGS = [
+  '위로형',
+  '블랙유머형',
+  '현타형',
+  '자기성찰형',
+  '단호한 결심형',
+  '담담한 체념형',
+] as const;
+
+const SPEECH_PROFILES = [
+  '짧고 직설적인 말투',
+  '비유 많은 감성 말투',
+  '속마음 독백 중심 말투',
+  '자기합리화가 많은 말투',
+  '과장 리액션 중심 말투',
+  '건조한 현실해설 말투',
+] as const;
+
+const PROP_TRACKS = [
+  '핸드폰/알림',
+  '메신저/읽씹 표시',
+  '시계/마감 시간',
+  '결제내역/영수증',
+  '거울/셀카',
+  '문서/파일',
+] as const;
+
+function seededSortBy<T>(items: readonly T[], seed: number): T[] {
+  return [...items]
+    .map((item, idx) => ({
+      item,
+      score: Math.abs(Math.sin((seed + idx + 1) * 12.9898) * 43758.5453) % 1,
+    }))
+    .sort((a, b) => a.score - b.score)
+    .map((entry) => entry.item);
+}
+
+function assignGuide<T>(items: readonly T[], count: number, seed: number): T[] {
+  const sorted = seededSortBy(items, seed);
+  return Array.from({ length: count }, (_, i) => sorted[i % sorted.length]);
+}
+
+function toBigrams(text: string): Set<string> {
+  const normalized = text
+    .toLowerCase()
+    .replace(/[\s\p{P}\p{S}]+/gu, '')
+    .trim();
+  const grams = new Set<string>();
+  if (normalized.length < 2) return grams;
+  for (let i = 0; i < normalized.length - 1; i += 1) {
+    grams.add(normalized.slice(i, i + 2));
+  }
+  return grams;
+}
+
+function computeJaccard(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 || b.size === 0) return 0;
+  let intersection = 0;
+  for (const token of a) {
+    if (b.has(token)) intersection += 1;
+  }
+  const union = a.size + b.size - intersection;
+  return union === 0 ? 0 : intersection / union;
+}
+
+function storySignature(story: GeneratedStory): string {
+  return [
+    story.title,
+    story.desc,
+    story.kick,
+    story.summary,
+    story.dialog?.[0] ?? '',
+    story.dialog?.[story.dialog.length - 1] ?? '',
+  ].join(' ');
+}
+
+function validateDuplicateSimilarity(stories: GeneratedStory[]): void {
+  for (let i = 0; i < stories.length; i += 1) {
+    for (let j = i + 1; j < stories.length; j += 1) {
+      const aText = storySignature(stories[i]);
+      const bText = storySignature(stories[j]);
+      if (aText.length < MIN_SIMILARITY_TEXT_LENGTH || bText.length < MIN_SIMILARITY_TEXT_LENGTH) continue;
+      const similarity = computeJaccard(toBigrams(aText), toBigrams(bText));
+      if (similarity >= DUPLICATE_SIMILARITY_THRESHOLD) {
+        throw new Error(
+          `스토리 중복 감지: ${i + 1}번과 ${j + 1}번 유사도 ${Math.round(similarity * 100)}% (기준 ${Math.round(DUPLICATE_SIMILARITY_THRESHOLD * 100)}%)`,
+        );
+      }
+    }
+  }
+}
 
 interface StoryGenConfig {
   style: Style | null;
@@ -94,7 +215,16 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     .join(', ');
   const langName = dialogLanguage === 'custom' ? customLanguageInput : LANGUAGE_NAMES[dialogLanguage];
   const generationCount = serialMode ? Math.max(2, Math.min(20, serialEpisodeCount)) : STORY_GENERATION_COUNT;
+  const generationRandomSeed = Math.floor(Math.random() * 1_000_000);
   const multiThemeRandomSeed = Math.floor(Math.random() * 1_000_000);
+  const hookGuide = assignGuide(HOOK_STRATEGIES, generationCount, generationRandomSeed + 11);
+  const emotionArcGuide = assignGuide(EMOTION_ARCS, generationCount, generationRandomSeed + 23);
+  const twistTypeGuide = assignGuide(TWIST_TYPES, generationCount, generationRandomSeed + 37);
+  const narrationEndingGuide = assignGuide(NARRATION_ENDINGS, generationCount, generationRandomSeed + 53);
+  const propTrackGuide = assignGuide(PROP_TRACKS, generationCount, generationRandomSeed + 71);
+  const dialogLengthGuide = Array.from({ length: generationCount }, (_, i) => (
+    i % 3 === 0 ? '짧음→중간→짧음' : i % 3 === 1 ? '중간→짧음→길음' : '길음→중간→짧음'
+  ));
   const normalizedCharacterPlan = (
     characterPlan.length === generationCount
       ? characterPlan
@@ -103,6 +233,13 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
   const characterAssignmentGuide = normalizedCharacterPlan
     .map((name, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: ${name}`)
     .join('\n');
+  const uniqueCharacters = Array.from(new Set(normalizedCharacterPlan));
+  const speechProfileGuide = uniqueCharacters
+    .map((character, idx) => `   - ${character}: ${SPEECH_PROFILES[idx % SPEECH_PROFILES.length]}`)
+    .join('\n');
+  const episodeCraftGuide = Array.from({ length: generationCount }, (_, i) => (
+    `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: 훅=${hookGuide[i]} | 감정곡선=${emotionArcGuide[i]} | 반전=${twistTypeGuide[i]} | 내레이션=${narrationEndingGuide[i]} | 소품기억선=${propTrackGuide[i]} | 대사리듬=${dialogLengthGuide[i]}`
+  )).join('\n');
 
   // #22: Theme-specific ratios
   const ratios = PHASE_RATIOS[themeCategory] ?? DEFAULT_RATIOS;
@@ -123,9 +260,6 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
     ? `\n• 내레이션 스타일: "${narrationOption.prompt}"`
     : '';
 
-  const toneGuide = Array.from({ length: generationCount }, (_, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: ${TONE_PRESETS[i % TONE_PRESETS.length]}`).join('\n');
-  const kickGuide = Array.from({ length: generationCount }, (_, i) => `   - ${serialMode ? `${i + 1}화` : `스토리${i + 1}`}: ${KICK_TYPES[i % KICK_TYPES.length]}`).join('\n');
-
   let prompt = `${STORY_SYSTEM_ROLE}
 아래 조건에 맞는 공감툰 스토리를 정확히 ${generationCount}개 생성해주세요.
 
@@ -136,9 +270,23 @@ export function buildStoryPrompt(config: StoryGenConfig): string {
 • 컷 수: ${panelCount}컷 (각 컷에 대사 1개씩)
 • 대사 언어: ${langName} — 모든 dialog, title, desc, kick, narration, summary를 ${langName}로 작성
 • 공감 강도: 5/5 — 극한 공감 모드 고정${kickInstruction}${narrationInstruction}
+• 생성 랜덤 시드: ${generationRandomSeed}
 ${MODE_INSTRUCTIONS[contentMode]}
 
 ${EMPATHY_GUIDE}`;
+  prompt += `
+• 반복 차단 규칙(필수):
+  1) 같은 프레임의 사건 구조(도입-사건-반전)를 그대로 재사용하지 마세요.
+  2) 이전 ${serialMode ? '화' : '스토리'}와 동일한 소품/직업/공간 조합을 금지하세요.
+  3) 동일 주제라도 전혀 다른 상황과 반전 장치를 선택하세요.`;
+  prompt += `
+• 에피소드 설계표(필수):
+${episodeCraftGuide}
+• 캐릭터 말투 프로필(필수):
+${speechProfileGuide}
+• 컷1 고정 규칙: 첫 대사는 반드시 "찔리는 한 줄 훅"으로 시작하고, 추상 표현을 금지하세요.
+• 컷2~3 고정 규칙: 감정 원인과 사건 원인을 분리해서 각각 명시하세요.
+• 요약문 고정 규칙: summary는 반드시 "행동 + 결과" 구조의 한 문장으로 작성하세요.`;
 
   if (isOriginalStyle) {
     prompt += '\n\n=== 오리지널 캐릭터 모드 ===';
@@ -200,13 +348,12 @@ ${characterAssignmentGuide}
 • 결말 (${ending}컷): 여운 있는 마무리, 내레이션으로 감성 마무리
 
 ${STORY_RULES}
-2. 각 ${serialMode ? '화' : '스토리'}별 톤 분배:
-${toneGuide}`;
+2. 각 ${serialMode ? '화' : '스토리'}의 톤/정서/리듬을 서로 다르게 설계하세요.
+3. 각 ${serialMode ? '화' : '스토리'}는 장소, 갈등 원인, 반전 메커니즘이 모두 달라야 합니다.`;
 
   if (selectedKickType === 'auto') {
     prompt += `
-3. 반전(kick) 유형 분배 (각각 다르게):
-${kickGuide}`;
+4. 반전(kick) 유형은 각 ${serialMode ? '화' : '스토리'}마다 서로 다르게 구성하세요.`;
   }
 
   prompt += `
@@ -302,5 +449,7 @@ export function parseStoryResponse(
     throw new Error(`응답에서 ${expectedCount}개의 스토리를 모두 파싱하지 못했습니다.`);
   }
 
-  return expectedCount ? normalized.slice(0, expectedCount) : normalized;
+  const sliced = expectedCount ? normalized.slice(0, expectedCount) : normalized;
+  validateDuplicateSimilarity(sliced);
+  return sliced;
 }

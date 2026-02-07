@@ -1,4 +1,4 @@
-import type { Theme, ThemeMeta } from '../types';
+import type { ThemeMeta } from '../types';
 
 export const THEME_CATEGORIES = [
   { key: '심리', label: '심리/성향', emoji: '🧠' },
@@ -41,20 +41,3 @@ export const themeMetaList: ThemeMeta[] = [
   { key: '수영장에피소드', name: '수영장 에피소드', emoji: '👙', description: '비키니 시선 강탈, 선크림 발라주기', category: '19금' },
   { key: '오해받는상황', name: '오해받는 상황', emoji: '🤭', description: '야한 소리로 오해, 엉뚱한 자세 들킴', category: '19금' },
 ];
-
-// 기존 themeData는 참고용으로 유지
-export const themeData: Record<string, Theme> = {
-  ADHD: {
-    name: 'ADHD',
-    stories: [
-      { title: '과집중 모드', desc: '좋아하는 일에 시간이 사라짐', kick: '라면이 죽이 됨 🍜', dialog: ['이거 재밌다!', '5분만 더...', '어? 밤이야?!', '내 라면...ㅠㅠ'], narration: '그의 라면은 오늘도 죽이 되었다.' },
-      { title: '청각 과민', desc: '작은 소리가 천둥처럼', kick: '모기에 방 반파 💥', dialog: ['오늘은 꿀잠~', '위이잉...?!', '으악!!', '적어도 잡았으니...'], narration: '빈대 잡다 초가삼간 태움.' },
-    ],
-  },
-  HSP: {
-    name: 'HSP',
-    stories: [
-      { title: '감각 과부하', desc: '밝은 빛, 큰 소리, 강한 냄새', kick: '마트가 던전 🏪', dialog: ['마트만 갔다올게', '(쾅쾅 찌직)', '머리가...', '집 가고 싶어...'], narration: '마트 10분이 보스전 같다.' },
-    ],
-  },
-};
