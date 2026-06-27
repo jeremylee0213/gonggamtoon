@@ -161,8 +161,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   editedOutfits: {},
   hasEverCopied: false,
 
-  activeProvider: 'openai',
+  activeProvider: 'codex',
   apiKeys: {
+    codex: getApiKey('codex'),
     gemini: getApiKey('gemini'),
     openai: getApiKey('openai'),
     claude: getApiKey('claude'),
@@ -286,7 +287,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setGeneratedStories: (stories) => set({ generatedStories: stories, selectedStory: null, generatedPrompts: [], editedDialogs: {}, editedOutfits: {} }),
   setGeneratedPrompts: (prompts) => set({ generatedPrompts: prompts }),
   setSelectedStory: (story) => set({ selectedStory: story }),
-  setGeneratingStories: (loading) => set({ isGeneratingStories: loading, generationPhase: loading ? 'API 요청 중...' : '' }),
+  setGeneratingStories: (loading) => set({ isGeneratingStories: loading, generationPhase: loading ? 'AI 요청 중...' : '' }),
   setGenerationPhase: (phase) => set({ generationPhase: phase }),
   requestRegenerate: () => set({ regenerateRequested: true }),
   clearRegenerateRequest: () => set({ regenerateRequested: false }),
@@ -406,11 +407,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     const s = get();
     const hasStyle = !!(s.selectedStyle || s.customStyleInput.trim());
     const hasTheme = s.selectedThemes.length > 0 || !!(s.selectedTheme || s.customThemeInput.trim());
-    const hasApiKey = !!s.apiKeys[s.activeProvider];
-    return hasStyle && hasTheme && hasApiKey;
+    const canUseProvider = s.activeProvider === 'codex' || !!s.apiKeys[s.activeProvider];
+    return hasStyle && hasTheme && canUseProvider;
   },
   hasActiveApiKey: () => {
     const s = get();
-    return !!s.apiKeys[s.activeProvider];
+    return s.activeProvider === 'codex' || !!s.apiKeys[s.activeProvider];
   },
 }));

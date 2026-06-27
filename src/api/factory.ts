@@ -2,8 +2,10 @@ import type { ProviderType } from '../types';
 import { generateTextWithGemini } from './gemini';
 import { generateTextWithOpenAI } from './openai';
 import { generateTextWithClaude } from './claude';
+import { generateTextWithCodex } from './codex';
 
 const REQUEST_TIMEOUT_MS = 60_000;
+const LOCAL_CODEX_TIMEOUT_MS = 300_000;
 
 let currentController: AbortController | null = null;
 
@@ -26,11 +28,14 @@ export async function generateTextWithProvider(
 
   const timeoutId = setTimeout(() => {
     currentController?.abort();
-  }, REQUEST_TIMEOUT_MS);
+  }, provider === 'codex' ? LOCAL_CODEX_TIMEOUT_MS : REQUEST_TIMEOUT_MS);
 
   try {
     let result: string;
     switch (provider) {
+      case 'codex':
+        result = await generateTextWithCodex(prompt, model, signal);
+        break;
       case 'gemini':
         result = await generateTextWithGemini(prompt, apiKey, model, signal);
         break;

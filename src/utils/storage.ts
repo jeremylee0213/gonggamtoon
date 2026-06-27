@@ -39,7 +39,7 @@ export function setApiKey(provider: ProviderType, key: string): void {
 }
 
 export function clearAllApiKeys(): void {
-  (['gemini', 'openai', 'claude'] as ProviderType[]).forEach((p) => {
+  (['codex', 'gemini', 'openai', 'claude'] as ProviderType[]).forEach((p) => {
     sessionStorage.removeItem(`${KEY_PREFIX}${p}`);
   });
 }

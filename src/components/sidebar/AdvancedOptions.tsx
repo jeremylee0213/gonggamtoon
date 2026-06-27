@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, Settings2, Download, Upload } from 'lucide-reac
 import { useAppStore } from '../../store/useAppStore';
 import { KICK_TYPE_OPTIONS } from '../../data/kickTypes';
 import { NARRATION_STYLE_OPTIONS } from '../../data/narrationStyles';
-import { showToast } from '../common/Toast';
+import { showToast } from '../common/toastBus';
 
 export default function AdvancedOptions() {
   const [open, setOpen] = useState(false);

@@ -1,34 +1,17 @@
 import { useEffect, useState } from 'react';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
-
-export interface ToastData {
-  id: string;
-  message: string;
-  type: 'success' | 'error' | 'info';
-}
-
-let toastListener: ((toast: ToastData) => void) | null = null;
-
-export function showToast(message: string, type: ToastData['type'] = 'info') {
-  const toast: ToastData = {
-    id: `toast-${Date.now()}`,
-    message,
-    type,
-  };
-  toastListener?.(toast);
-}
+import { subscribeToast, type ToastData } from './toastBus';
 
 export default function ToastContainer() {
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
   useEffect(() => {
-    toastListener = (toast) => {
+    return subscribeToast((toast) => {
       setToasts((prev) => [...prev, toast]);
       setTimeout(() => {
         setToasts((prev) => prev.filter((t) => t.id !== toast.id));
       }, 4000);
-    };
-    return () => { toastListener = null; };
+    });
   }, []);
 
   const removeToast = (id: string) => {

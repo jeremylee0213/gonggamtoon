@@ -1,7 +1,7 @@
 import { useState, useCallback, memo } from 'react';
 import { RefreshCw, LayoutGrid, Table2 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
-import { showToast } from '../common/Toast';
+import { showToast } from '../common/toastBus';
 import { copyToClipboard } from '../../utils/clipboard';
 import confetti from 'canvas-confetti';
 import StoryCard from './StoryCard';

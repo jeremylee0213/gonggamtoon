@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Shirt, X, Check } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import type { GeneratedStory } from '../../types';
-import { showToast } from '../common/Toast';
+import { showToast } from '../common/toastBus';
 
 interface OutfitEditorProps {
   story: GeneratedStory;
@@ -88,4 +88,3 @@ export default function OutfitEditor({ story, index }: OutfitEditorProps) {
     </div>
   );
 }
-

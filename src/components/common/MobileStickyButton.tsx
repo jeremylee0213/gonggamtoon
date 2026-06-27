@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Sparkles, Loader2, ChevronUp, X, Copy, Check, Palette, Heart, Hash } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { scrollToSection } from '../../hooks/useAutoScroll';
-import { showToast } from './Toast';
+import { showToast } from './toastBus';
 
 const PROMPT_COLORS = [
   { bg: 'bg-primary', label: '스토리 1' },

@@ -47,7 +47,7 @@ export interface PanelLayout {
   rows: number;
 }
 
-export type ProviderType = 'gemini' | 'openai' | 'claude';
+export type ProviderType = 'codex' | 'gemini' | 'openai' | 'claude';
 
 export interface Model {
   id: string;

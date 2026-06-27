@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Copy, Check, Columns2, List } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
-import { showToast } from '../common/Toast';
+import { showToast } from '../common/toastBus';
 import { copyToClipboard } from '../../utils/clipboard';
 import confetti from 'canvas-confetti';
 

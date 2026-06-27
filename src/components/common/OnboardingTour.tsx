@@ -4,8 +4,8 @@ import { X, ChevronRight } from 'lucide-react';
 const TOUR_STEPS = [
   {
     target: 'section-api',
-    title: 'API 설정',
-    desc: '먼저 AI 서비스의 API 키를 입력하세요. Gemini, OpenAI, Claude 중 선택할 수 있어요.',
+    title: 'AI 설정',
+    desc: '기본은 이 PC의 Codex 로컬 실행입니다. 필요하면 Gemini, OpenAI, Claude API로 바꿀 수 있어요.',
   },
   {
     target: 'section-style',

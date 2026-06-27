@@ -5,7 +5,7 @@ import { buildStoryPrompt, parseStoryResponse } from '../../prompt/storyGenerato
 import { generateTextWithProvider, abortCurrentRequest } from '../../api/factory';
 import { buildPrompt } from '../../prompt/builder';
 import { getLayoutForPanels, STORY_GENERATION_COUNT } from '../../data/panelLayouts';
-import { showToast } from '../common/Toast';
+import { showToast } from '../common/toastBus';
 import { scrollToSection } from '../../hooks/useAutoScroll';
 
 const MAX_RETRY = 2;
@@ -148,7 +148,7 @@ export default function GenerateButtons() {
 
       for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
         try {
-          setGenerationPhase(attempt > 0 ? `재시도 중... (${attempt}/${MAX_RETRY})` : 'API 응답 대기 중...');
+          setGenerationPhase(attempt > 0 ? `재시도 중... (${attempt}/${MAX_RETRY})` : 'AI 응답 대기 중...');
 
           const response = await generateTextWithProvider(
             activeProvider,
@@ -180,7 +180,12 @@ export default function GenerateButtons() {
         } catch (err) {
           lastError = err instanceof Error ? err : new Error(String(err));
           if (lastError.name === 'AbortError') throw lastError;
-          if (lastError.message.includes('API') || lastError.message.includes('401') || lastError.message.includes('403')) {
+          if (
+            lastError.message.includes('API')
+            || lastError.message.includes('Codex')
+            || lastError.message.includes('401')
+            || lastError.message.includes('403')
+          ) {
             throw lastError;
           }
           if (attempt < MAX_RETRY) {
