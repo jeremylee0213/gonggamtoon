@@ -7,6 +7,7 @@ const LOCAL_CODEX_ENDPOINT = `${BASE_URL}__local_codex`;
 
 function mapErrorMessage(status: number, message: string): string {
   if (status === 404) return '로컬 Codex 연결 서버를 찾지 못했습니다. npm run dev로 실행해 주세요.';
+  if (status === 405) return 'GitHub Pages 공개 주소에서는 로컬 Codex를 실행할 수 없습니다. 이 PC에서 npm run dev로 연 로컬 주소를 사용해 주세요.';
   if (status === 413) return '요청 내용이 너무 큽니다.';
   if (status === 500) return message || '로컬 Codex 실행 중 오류가 발생했어요.';
   return message || '로컬 Codex 요청 중 오류가 발생했어요.';

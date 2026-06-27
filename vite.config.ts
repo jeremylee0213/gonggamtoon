@@ -79,6 +79,7 @@ async function runCodexExec(
         model,
         '-c',
         `model_reasoning_effort="${reasoningEffort}"`,
+        '--ignore-user-config',
         '--skip-git-repo-check',
         '--sandbox',
         'read-only',
