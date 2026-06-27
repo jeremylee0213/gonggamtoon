@@ -1,4 +1,5 @@
 import type { ProviderType } from '../types';
+import type { CodexReasoningEffort } from '../types';
 import { generateTextWithGemini } from './gemini';
 import { generateTextWithOpenAI } from './openai';
 import { generateTextWithClaude } from './claude';
@@ -21,6 +22,7 @@ export async function generateTextWithProvider(
   prompt: string,
   apiKey: string,
   model: string,
+  codexReasoningEffort: CodexReasoningEffort = 'xhigh',
 ): Promise<string> {
   abortCurrentRequest();
   currentController = new AbortController();
@@ -34,7 +36,7 @@ export async function generateTextWithProvider(
     let result: string;
     switch (provider) {
       case 'codex':
-        result = await generateTextWithCodex(prompt, model, signal);
+        result = await generateTextWithCodex(prompt, model, codexReasoningEffort, signal);
         break;
       case 'gemini':
         result = await generateTextWithGemini(prompt, apiKey, model, signal);

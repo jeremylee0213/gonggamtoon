@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Eye, EyeOff, Trash2, Zap } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
-import { providerModels } from '../../data/models';
+import { codexReasoningEfforts, providerModels } from '../../data/models';
 import { clearAllApiKeys } from '../../utils/storage';
 import { showToast } from '../common/toastBus';
 import type { ProviderType } from '../../types';
@@ -16,7 +16,16 @@ const PROVIDERS: { type: ProviderType; label: string; icon: string }[] = [
 export default function ApiSettings() {
   const [collapsed, setCollapsed] = useState(true);
   const [showKey, setShowKey] = useState(false);
-  const { activeProvider, apiKeys, selectedModels, setActiveProvider, setApiKey, setSelectedModel } = useAppStore();
+  const {
+    activeProvider,
+    apiKeys,
+    selectedModels,
+    codexReasoningEffort,
+    setActiveProvider,
+    setApiKey,
+    setSelectedModel,
+    setCodexReasoningEffort,
+  } = useAppStore();
 
   const handleClearAll = () => {
     clearAllApiKeys();
@@ -48,6 +57,7 @@ export default function ApiSettings() {
           {collapsed && (currentKey || isLocalCodex) && (
             <span className="text-sm font-normal text-muted ml-2">
               {currentProvider?.icon} {currentProvider?.label} · {selectedModels[activeProvider]}
+              {isLocalCodex ? ` · ${codexReasoningEffort}` : ''}
             </span>
           )}
         </span>
@@ -75,22 +85,39 @@ export default function ApiSettings() {
             ))}
           </div>
 
-          <select
-            value={selectedModels[activeProvider]}
-            onChange={(e) => setSelectedModel(activeProvider, e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-border bg-white text-base shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] dark:bg-card"
-            aria-label="모델 선택"
-          >
-            {models.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
+          <div className={isLocalCodex ? 'grid gap-2 sm:grid-cols-2' : ''}>
+            <select
+              value={selectedModels[activeProvider]}
+              onChange={(e) => setSelectedModel(activeProvider, e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-border bg-white text-base shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] dark:bg-card"
+              aria-label="모델 선택"
+            >
+              {models.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+
+            {isLocalCodex && (
+              <select
+                value={codexReasoningEffort}
+                onChange={(e) => setCodexReasoningEffort(e.target.value as typeof codexReasoningEffort)}
+                className="w-full px-4 py-2.5 rounded-xl border border-border bg-white text-base shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] dark:bg-card"
+                aria-label="추론강도 선택"
+              >
+                {codexReasoningEfforts.map((effort) => (
+                  <option key={effort.id} value={effort.id}>
+                    추론강도 {effort.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
 
           {isLocalCodex ? (
             <div className="rounded-xl border border-success bg-green-50 px-4 py-3 text-sm text-text dark:bg-green-900/20">
-              API 키 없이 이 PC의 Codex CLI를 사용합니다. 모델은 GPT-5.4, 추론 강도는 xhigh로 고정됩니다.
+              API 키 없이 이 PC의 Codex CLI를 사용합니다. 모델과 추론강도를 위에서 선택할 수 있습니다.
             </div>
           ) : (
             <div className="flex gap-2">

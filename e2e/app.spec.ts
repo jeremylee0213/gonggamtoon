@@ -50,6 +50,9 @@ test.describe('공감툰 프롬프트 봇', () => {
 
     await expect(page.locator('button[role="radio"]:has-text("Codex 로컬")')).toBeVisible();
     await expect(page.locator('text=API 키 없이 이 PC의 Codex CLI를 사용합니다')).toBeVisible();
+    await expect(page.locator('select[aria-label="모델 선택"]')).toHaveValue('gpt-5.5');
+    await expect(page.locator('select[aria-label="추론강도 선택"]')).toHaveValue('xhigh');
+    await expect(page.locator('select[aria-label="추론강도 선택"]')).toContainText('추론강도 High');
 
     // 외부 API 제공자도 필요할 때 선택할 수 있어야 한다.
     await expect(page.locator('button[role="radio"]:has-text("Gemini")')).toBeVisible();

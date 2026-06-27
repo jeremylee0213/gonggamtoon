@@ -27,6 +27,7 @@ export default function GenerateButtons() {
   const activeProvider = useAppStore((s) => s.activeProvider);
   const apiKeys = useAppStore((s) => s.apiKeys);
   const selectedModels = useAppStore((s) => s.selectedModels);
+  const codexReasoningEffort = useAppStore((s) => s.codexReasoningEffort);
   const setGeneratedStories = useAppStore((s) => s.setGeneratedStories);
   const setGeneratedPrompts = useAppStore((s) => s.setGeneratedPrompts);
   const generatedStories = useAppStore((s) => s.generatedStories);
@@ -155,6 +156,7 @@ export default function GenerateButtons() {
             prompt,
             apiKeys[activeProvider],
             selectedModels[activeProvider],
+            codexReasoningEffort,
           );
 
           setGenerationPhase('스토리 파싱 중...');
@@ -209,7 +211,7 @@ export default function GenerateButtons() {
       setGenerationPhase('');
       isGeneratingRef.current = false;
     }
-  }, [ready, selectedStyle, customStyleInput, originalStylePrompt, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, protagonistName, referenceText, serialMode, serialEpisodeCount, previousEpisodeSummary]);
+  }, [ready, selectedStyle, customStyleInput, originalStylePrompt, selectedTheme, selectedThemes, customThemeInput, effectivePanels, dialogLanguage, customLanguageInput, contentMode, activeProvider, apiKeys, selectedModels, codexReasoningEffort, setGeneratedStories, setGeneratedPrompts, setSelectedStory, setGeneratingStories, setGenerationPhase, buildAllPrompts, selectedKickType, selectedNarrationStyle, protagonistName, referenceText, serialMode, serialEpisodeCount, previousEpisodeSummary]);
 
   const handleCancel = useCallback(() => {
     abortCurrentRequest();

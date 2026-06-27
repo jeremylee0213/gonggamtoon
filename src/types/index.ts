@@ -48,6 +48,7 @@ export interface PanelLayout {
 }
 
 export type ProviderType = 'codex' | 'gemini' | 'openai' | 'claude';
+export type CodexReasoningEffort = 'low' | 'medium' | 'high' | 'xhigh';
 
 export interface Model {
   id: string;

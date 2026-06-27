@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import type { ChatMessage, GeneratedStory, ProviderType, Style, ThemeMeta } from '../types';
-import { defaultModels, providerModels } from '../data/models';
+import type { ChatMessage, CodexReasoningEffort, GeneratedStory, ProviderType, Style, ThemeMeta } from '../types';
+import { defaultCodexReasoningEffort, defaultModels, providerModels } from '../data/models';
 import { DEFAULT_PANELS } from '../data/panelLayouts';
 import { getApiKey, setApiKey as saveApiKey } from '../utils/storage';
 
@@ -52,6 +52,7 @@ interface AppState {
   activeProvider: ProviderType;
   apiKeys: Record<ProviderType, string>;
   selectedModels: Record<ProviderType, string>;
+  codexReasoningEffort: CodexReasoningEffort;
 
   // 즐겨찾기
   favorites: { story: GeneratedStory; prompt: string; savedAt: number }[];
@@ -112,6 +113,7 @@ interface AppState {
   setActiveProvider: (provider: ProviderType) => void;
   setApiKey: (provider: ProviderType, key: string) => void;
   setSelectedModel: (provider: ProviderType, model: string) => void;
+  setCodexReasoningEffort: (effort: CodexReasoningEffort) => void;
 
   // 액션 - 채팅
   addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
@@ -169,6 +171,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     claude: getApiKey('claude'),
   },
   selectedModels: { ...defaultModels },
+  codexReasoningEffort: defaultCodexReasoningEffort,
 
   favorites: (() => {
     try {
@@ -348,6 +351,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       set((state) => ({ selectedModels: { ...state.selectedModels, [provider]: model } }));
     }
   },
+  setCodexReasoningEffort: (effort) => set({ codexReasoningEffort: effort }),
 
   addMessage: (message) =>
     set((state) => {

@@ -1,3 +1,5 @@
+import type { CodexReasoningEffort } from '../types';
+
 const BASE_URL = import.meta.env.BASE_URL.endsWith('/')
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
@@ -13,12 +15,13 @@ function mapErrorMessage(status: number, message: string): string {
 export async function generateTextWithCodex(
   prompt: string,
   model: string,
+  reasoningEffort: CodexReasoningEffort,
   signal?: AbortSignal,
 ): Promise<string> {
   const response = await fetch(LOCAL_CODEX_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, model }),
+    body: JSON.stringify({ prompt, model, reasoningEffort }),
     signal,
   });
 

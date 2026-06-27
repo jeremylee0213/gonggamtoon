@@ -9,14 +9,17 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 const LOCAL_CODEX_PATHS = new Set(['/__local_codex', '/gonggamtoon/__local_codex']);
-const LOCAL_CODEX_MODEL = 'gpt-5.4';
-const LOCAL_CODEX_REASONING_EFFORT = 'xhigh';
+const LOCAL_CODEX_DEFAULT_MODEL = 'gpt-5.5';
+const LOCAL_CODEX_DEFAULT_REASONING_EFFORT = 'xhigh';
+const LOCAL_CODEX_MODELS = new Set(['gpt-5.5', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.3-codex-spark']);
+const LOCAL_CODEX_REASONING_EFFORTS = new Set(['low', 'medium', 'high', 'xhigh']);
 const LOCAL_CODEX_TIMEOUT_MS = 300_000;
 const MAX_LOCAL_CODEX_BODY_BYTES = 1_500_000;
 
 interface LocalCodexPayload {
   prompt: string;
   model?: string;
+  reasoningEffort?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -55,7 +58,12 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-async function runCodexExec(prompt: string, model: string, signal: AbortSignal): Promise<string> {
+async function runCodexExec(
+  prompt: string,
+  model: string,
+  reasoningEffort: string,
+  signal: AbortSignal,
+): Promise<string> {
   const tempDir = await mkdtemp(join(tmpdir(), 'gonggamtoon-codex-'));
   const outputPath = join(tempDir, 'last-message.txt');
 
@@ -70,7 +78,7 @@ async function runCodexExec(prompt: string, model: string, signal: AbortSignal):
         '-m',
         model,
         '-c',
-        `model_reasoning_effort="${LOCAL_CODEX_REASONING_EFFORT}"`,
+        `model_reasoning_effort="${reasoningEffort}"`,
         '--skip-git-repo-check',
         '--sandbox',
         'read-only',
@@ -205,9 +213,15 @@ async function handleLocalCodexRequest(
       return;
     }
 
-    const model = payload.model || LOCAL_CODEX_MODEL;
-    if (model !== LOCAL_CODEX_MODEL) {
-      sendJson(res, 400, { error: '로컬 Codex는 gpt-5.4 모델만 허용합니다.' });
+    const model = payload.model || LOCAL_CODEX_DEFAULT_MODEL;
+    if (!LOCAL_CODEX_MODELS.has(model)) {
+      sendJson(res, 400, { error: '지원하지 않는 로컬 Codex 모델입니다.' });
+      return;
+    }
+
+    const reasoningEffort = payload.reasoningEffort || LOCAL_CODEX_DEFAULT_REASONING_EFFORT;
+    if (!LOCAL_CODEX_REASONING_EFFORTS.has(reasoningEffort)) {
+      sendJson(res, 400, { error: '지원하지 않는 추론강도입니다.' });
       return;
     }
 
@@ -221,11 +235,11 @@ async function handleLocalCodexRequest(
       if (!responseFinished) abortController.abort();
     });
 
-    const text = await runCodexExec(payload.prompt, model, abortController.signal);
+    const text = await runCodexExec(payload.prompt, model, reasoningEffort, abortController.signal);
     sendJson(res, 200, {
       text,
       model,
-      reasoningEffort: LOCAL_CODEX_REASONING_EFFORT,
+      reasoningEffort,
     });
   } catch (error) {
     if (getErrorMessage(error) === 'REQUEST_TOO_LARGE') {

@@ -1,8 +1,11 @@
-import type { Model, ProviderType } from '../types';
+import type { CodexReasoningEffort, Model, ProviderType } from '../types';
 
 export const providerModels: Record<ProviderType, Model[]> = {
   codex: [
-    { id: 'gpt-5.4', name: 'Codex GPT-5.4 · xhigh' },
+    { id: 'gpt-5.5', name: 'Codex GPT-5.5' },
+    { id: 'gpt-5.4', name: 'Codex GPT-5.4' },
+    { id: 'gpt-5.4-mini', name: 'Codex GPT-5.4 Mini' },
+    { id: 'gpt-5.3-codex-spark', name: 'Codex GPT-5.3 Spark' },
   ],
   gemini: [
     { id: 'gemini-2.5-pro-preview-06-05', name: 'Gemini 2.5 Pro' },
@@ -25,8 +28,17 @@ export const providerModels: Record<ProviderType, Model[]> = {
 };
 
 export const defaultModels: Record<ProviderType, string> = {
-  codex: 'gpt-5.4',
+  codex: 'gpt-5.5',
   gemini: 'gemini-2.5-pro-preview-06-05',
   openai: 'gpt-5.2',
   claude: 'claude-sonnet-4-5-20250929',
 };
+
+export const codexReasoningEfforts: { id: CodexReasoningEffort; name: string }[] = [
+  { id: 'low', name: 'Low' },
+  { id: 'medium', name: 'Medium' },
+  { id: 'high', name: 'High' },
+  { id: 'xhigh', name: 'XHigh' },
+];
+
+export const defaultCodexReasoningEffort: CodexReasoningEffort = 'xhigh';
